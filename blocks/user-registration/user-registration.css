@@ -1,0 +1,23 @@
+main .user-registration {
+  width: 100%;
+}
+
+main .user-registration .user-registration-form {
+  --form-columns: 12;
+}
+
+/* Headings spacing */
+main .user-registration h2 {
+  margin: 0 0 8px;
+}
+
+/* Submit wrapper full width on mobile by default (form.css already handles) */
+
+/* Responsive: stack to single column below 768px */
+@media (width <= 768px) {
+  main .user-registration .field-wrapper[class*="col-"] {
+    grid-column: span 12 !important;
+  }
+}
+
+
