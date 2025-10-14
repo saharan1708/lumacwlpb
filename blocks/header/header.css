@@ -313,14 +313,72 @@ header nav .nav-tools {
     margin-left: auto;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 16px;
+}
+
+/* Cart Icon */
+header nav .nav-tools .cart-icon,
+header nav .nav-tools a[href*="cart"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    position: relative;
+    text-decoration: none;
+    cursor: pointer;
+    background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" fill="%23333333"><ellipse fill-rule="evenodd" cx="10.445" cy="31.143" rx="2.667" ry="2.917"/><ellipse fill-rule="evenodd" cx="25.778" cy="31.143" rx="2.667" ry="2.917"/><path fill-rule="evenodd" d="M29.326,24H10.469l.762-2.6H28a1.331,1.331,0,0,0,1.307-1.071L33.974,7.66a1.334,1.334,0,0,0-1.308-1.595H32.54v-.03H6.5l-1.289-3.5A1.335,1.335,0,0,0,3.889,1.4H1.333a1.334,1.334,0,0,0,0,2.667H2.739L8.667,20,7.373,25.075A1.569,1.569,0,0,0,8.667,27H29.333a1.589,1.589,0,0,0,1.334-1.6A1.4,1.4,0,0,0,29.326,24ZM7.529,8.835H30.6l-3.693,9.9H11.174Z" transform="translate(0)"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px 20px;
+    background-color: transparent;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+header nav .nav-tools .cart-icon::after,
+header nav .nav-tools a[href*="cart"]::after {
+    content: none !important;
+}
+
+header nav .nav-tools .cart-icon:hover,
+header nav .nav-tools a[href*="cart"]:hover {
+    background-color: #e8e8e8;
+}
+
+/* Sign In Button */
+header nav .nav-tools .sign-in-btn,
+header nav .nav-tools a[href*="sign"] {
+    padding: 4px 16px !important;
+    background-color: transparent !important;
+    border: 1px solid rgba(0, 0, 0, 1);
+    color: var(--text-color);
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    text-transform: uppercase;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    text-decoration: none !important;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    line-height: 24px;
+}
+
+header nav .nav-tools .sign-in-btn::after,
+header nav .nav-tools a[href*="sign"]::after {
+    content: none !important;
+}
+
+header nav .nav-tools .sign-in-btn:hover,
+header nav .nav-tools a[href*="sign"]:hover {
+    background-color: #e8e8e8 !important;
+    text-decoration: none !important;
 }
 
 /* language switcher */
 .lang-switcher {
     position: relative;
     display: inline-block;
-    margin-left: 16px;
 }
 .lang-switcher .lang-button {
     background: transparent;
@@ -330,6 +388,10 @@ header nav .nav-tools {
     font-size: 12px;
     cursor: pointer;
     margin-top: 2px;
+    transition: all 0.3s ease;
+}
+.lang-switcher .lang-button:hover {
+    background-color: #e8e8e8;
 }
 .lang-switcher .lang-menu {
     position: absolute;
@@ -395,13 +457,6 @@ header nav .nav-tools {
 
 header nav .nav-tools .cancel-container {
     display: none !important;
-}
-
-header nav .nav-tools .icon-search-light {
-    display: inline-block;
-    height: 20px;
-    width: 20px;
-    margin-bottom: 5px;
 }
 
 /* ensure search and language switcher sit side-by-side inside tools */
