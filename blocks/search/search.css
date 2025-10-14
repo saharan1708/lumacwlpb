@@ -1,8 +1,38 @@
 .search.search-icon .search-trigger {
     border: none;
-    background: transparent;
-    padding: 4px;
+    background-color: transparent;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
     cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    padding: 0;
+    margin: 0;
+}
+
+.search.search-icon .search-trigger .icon {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+}
+
+.search.search-icon .search-trigger .icon img,
+.search.search-icon .search-trigger img {
+    width: 20px !important;
+    height: 20px !important;
+    display: block !important;
+    opacity: 0.8;
+}
+
+.search.search-icon .search-trigger:hover {
+    background-color: #e8e8e8;
 }
 .search.search-icon .search-overlay {
     position: fixed;
