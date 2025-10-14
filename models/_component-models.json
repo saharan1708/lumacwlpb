@@ -96,6 +96,10 @@
     ]
   },
   {
+    "id": "user-registration",
+    "fields": []
+  },
+  {
     "id": "image",
     "fields": [
       {
