@@ -93,6 +93,15 @@
         "label": "Page Category",
         "required": true
       }
+      ,
+      {
+        "component": "aem-tag",
+        "name": "cq:tags",
+        "label": "Tags",
+        "valueType": "string",
+        "multi": true,
+        "rootPath": "/content/cq:tags/lumaproducts"
+      }
     ]
   },
   {

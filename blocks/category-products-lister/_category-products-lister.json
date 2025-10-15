@@ -26,7 +26,15 @@
           "label": "Products Folder (Content Fragments)",
           "multi": false,
           "validation": { "rootPath": "/content/dam" }
-      }
+        },
+        {
+          "component": "aem-tag",
+          "name": "cq:tags",
+          "label": "Tags",
+          "valueType": "string",
+          "multi": true,
+          "rootPath": "/content/cq:tags/lumaproducts"
+        }
       ]
     }
   ],
