@@ -1,13 +1,26 @@
 import { readBlockConfig, createOptimizedPicture } from '../../scripts/aem.js';
+import { isAuthorEnvironment } from '../../scripts/scripts.js';
 
 const GQL_BASE = 'https://publish-p168578-e1802821.adobeaemcloud.com/graphql/execute.json/Lumacrosswalk/menproductspagelister';
 
-function buildCard(item) {
-  const { name, image = {}, category = [] } = item || {};
-  const imgUrl = image?._publishUrl || image?._dynamicUrl || image?._authorUrl || '';
+function buildCard(item, isAuthor) {
+  const { id, sku, name, image = {}, category = [] } = item || {};
+  const imgUrl = isAuthor ? image?._authorUrl : image?._publishUrl;
+  const productId = sku || id || '';
 
   const card = document.createElement('article');
   card.className = 'cpl-card';
+
+  // Make card clickable and redirect to product page
+  if (productId) {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => {
+      const currentPath = window.location.pathname;
+      // Replace the last segment (e.g., 'men-products') with 'product'
+      const newPath = currentPath.substring(0, currentPath.lastIndexOf('/')) + '/product';
+      window.location.href = `${newPath}?productId=${encodeURIComponent(productId)}`;
+    });
+  }
 
   const picture = imgUrl ? createOptimizedPicture(imgUrl, name || 'Product image', false, [
     { media: '(min-width: 900px)', width: '600' },
@@ -64,6 +77,9 @@ function renderHeader(container, selectedTags) {
 }
 
 export default async function decorate(block) {
+  // Check if we're in author environment
+  const isAuthor = isAuthorEnvironment();
+
   // Extract folder path from Universal Editor authored markup
   let folderHref = block.querySelector('a[href]')?.href 
     || block.querySelector('a[href]')?.textContent?.trim() 
@@ -109,7 +125,7 @@ export default async function decorate(block) {
     return;
   }
 
-  const cards = items.map(buildCard);
+  const cards = items.map((item) => buildCard(item, isAuthor));
   grid.append(...cards);
 }
 
