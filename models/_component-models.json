@@ -111,7 +111,7 @@
       },
       {
         "component": "aem-tag",
-        "name": "tags",
+        "name": "cq:tags",
         "label": "Tags",
         "valueType": "string",
         "multi": true,
