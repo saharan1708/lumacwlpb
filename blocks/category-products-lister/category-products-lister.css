@@ -48,6 +48,10 @@ main .category-products-lister .cpl-card:hover {
   box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
 }
 
+main .category-products-lister .cpl-card-media {
+  line-height: 0;
+}
+
 main .category-products-lister .cpl-card-media picture,
 main .category-products-lister .cpl-card-media img {
   display: block;
@@ -56,20 +60,24 @@ main .category-products-lister .cpl-card-media img {
 }
 
 main .category-products-lister .cpl-card-meta {
-  padding: 12px 16px 16px;
+  padding: 16px;
 }
 
 main .category-products-lister .cpl-card-category {
-  margin: 0 0 6px;
+  margin: 0 0 8px 0;
+  padding: 0;
   color: #8a8f98;
   font-size: 0.75rem;
   text-transform: uppercase;
+  line-height: 1.2;
 }
 
 main .category-products-lister .cpl-card-title {
   margin: 0;
+  padding: 0;
   font-size: 1rem;
   font-weight: 500;
+  line-height: 1.4;
 }
 
 /* Center align text on mobile/small screens */
