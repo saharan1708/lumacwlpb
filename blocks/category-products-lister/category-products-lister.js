@@ -37,9 +37,9 @@ function buildCard(item) {
 async function fetchProducts(path) {
   try {
     if (!path) return [];
-    const url = new URL(GQL_BASE);
-    url.searchParams.set('_path', path);
-    const resp = await fetch(url.href, { method: 'GET' });
+    // For AEM parameterized queries, use semicolon syntax: ;_path=value
+    const url = `${GQL_BASE};_path=${encodeURIComponent(path)}`;
+    const resp = await fetch(url, { method: 'GET' });
     const json = await resp.json();
     return json?.data?.productsModelList?.items || [];
   } catch (e) {
