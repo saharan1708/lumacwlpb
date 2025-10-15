@@ -6491,7 +6491,7 @@
         "label": "Tags",
         "valueType": "string",
         "multi": true,
-        "rootPath": "/content/cq:tags/lumaproducts"
+        "rootPath": "/content/cq:tags/wknd-universal"
       }
     ]
   }
