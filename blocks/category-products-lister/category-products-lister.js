@@ -83,6 +83,11 @@ export default async function decorate(block) {
     }
   } catch (e) { /* ignore */ }
 
+  // Remove .html extension if present (Universal Editor adds it)
+  if (folderHref && folderHref.endsWith('.html')) {
+    folderHref = folderHref.replace(/\.html$/, '');
+  }
+
   // Extract tags - for Universal Editor they'll be in data attributes
   const tags = block.dataset?.['cqTags'] || cfg?.tags || cfg?.['cq:tags'] || '';
 
