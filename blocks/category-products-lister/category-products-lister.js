@@ -38,7 +38,7 @@ async function fetchProducts(path) {
   try {
     if (!path) return [];
     // For AEM parameterized queries, use semicolon syntax: ;_path=value
-    const url = `${GQL_BASE};_path=${encodeURIComponent(path)}`;
+    const url = `${GQL_BASE};_path=${path}`;
     const resp = await fetch(url, { method: 'GET' });
     const json = await resp.json();
     return json?.data?.productsModelList?.items || [];
