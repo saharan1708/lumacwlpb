@@ -103,10 +103,11 @@
     "id": "category-products-lister",
     "fields": [
       {
-        "component": "reference",
+        "component": "aem-content",
         "name": "folder",
         "label": "Products Folder (Content Fragments)",
-        "multi": false
+        "multi": false,
+        "validation": { "rootPath": "/content/dam" }
       },
       {
         "component": "aem-tag",
