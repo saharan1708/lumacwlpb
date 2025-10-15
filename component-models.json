@@ -386,6 +386,19 @@
     ]
   },
   {
+    "id": "cards",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "classes",
+        "label": "Custom Style Classes",
+        "value": "",
+        "description": "Add custom CSS class names (space-separated). Example: feature-cards, image-left, bg-light-gray"
+      }
+    ]
+  },
+  {
     "id": "card",
     "fields": [
       {
