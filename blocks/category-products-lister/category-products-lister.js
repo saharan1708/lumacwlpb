@@ -65,8 +65,16 @@ function renderHeader(container, selectedTags) {
 
 export default async function decorate(block) {
   const cfg = readBlockConfig(block);
-  const folderHref = cfg?.folder || cfg?.reference || cfg?.path || '';
-  const tags = cfg?.tags || '';
+  let folderHref = cfg?.folder || cfg?.reference || cfg?.path || '';
+  const tags = cfg?.tags || cfg?.['cq:tags'] || '';
+
+  // Normalize folder path to pathname if an absolute URL is provided
+  try {
+    if (folderHref && folderHref.startsWith('http')) {
+      const u = new URL(folderHref);
+      folderHref = u.pathname;
+    }
+  } catch (e) { /* ignore */ }
 
   // Clear author table
   block.innerHTML = '';

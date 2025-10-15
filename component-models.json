@@ -6474,5 +6474,24 @@
         "valueType": "string"
       }
     ]
+  },
+  {
+    "id": "category-products-lister",
+    "fields": [
+      {
+        "component": "aem-content",
+        "name": "folder",
+        "label": "Products Folder (Content Fragments)",
+        "multi": false,
+        "validation": { "rootPath": "/content/dam" }
+      },
+      {
+        "component": "aem-tag",
+        "name": "tags",
+        "label": "Tags",
+        "valueType": "string",
+        "multi": true
+      }
+    ]
   }
 ]
