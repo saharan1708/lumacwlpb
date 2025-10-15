@@ -110,8 +110,7 @@
         "valueType": "string",
         "name": "pageCategory",
         "label": "Page Category"
-      }
-      ,
+      },
       {
         "component": "aem-tag",
         "name": "cq:tags",
@@ -418,11 +417,11 @@
           },
           {
             "name": "Image Left",
-            "value": "image-top"
+            "value": "image-left"
           },
           {
             "name": "Image Right",
-            "value": "image-top"
+            "value": "image-right"
           },
           {
             "name": "Image Bottom",
