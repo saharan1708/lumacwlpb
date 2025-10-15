@@ -27,13 +27,12 @@
           "multi": false,
           "validation": { "rootPath": "/content/dam" }
         },
-      {
-        "component": "aem-tag",
-        "name": "cq:tags",
+        {
+          "component": "aem-tag",
+          "name": "cq:tags",
           "label": "Tags",
-        "valueType": "string",
-        "multi": true,
-        "rootPath": "/content/cq:tags/wknd-universal"
+          "valueType": "string",
+          "rootPath": "/content/cq:tags/wknd-universal"
         }
       ]
     }
