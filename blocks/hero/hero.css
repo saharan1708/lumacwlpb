@@ -1,56 +1,85 @@
 /* --------------------------
    Base Hero Layout
 --------------------------- */
+.hero-container {
+  width: 100%;
+  max-width: 100%;
+}
+
 .hero-container .hero-wrapper {
-  max-width: unset;
+  width: 100%;
   padding: 0;
+  margin-top: 10px;
 }
 
 .hero {
   position: relative;
-  padding: 40px 24px;
-  min-height: 700px;
+  padding: 80px 40px;
+  min-height: 500px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
+  background-color: #f5f5f5;
+  max-width: 100%;
+  width: 100%;
 }
 
 /* --------------------------
    Headings & Paragraphs
 --------------------------- */
+.hero > div {
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  z-index: 1;
+  padding: 0 40px;
+}
+
+.hero > div > * {
+  max-width: 600px;
+}
+
 .hero h1,
 .hero h2,
 .hero h3,
 .hero h4,
 .hero h5,
-.hero h6,
+.hero h6 {
+  color: #ffffff;
+  text-align: right;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 20px 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hero h1 {
+  font-size: 48px;
+  line-height: 1.2;
+}
+
 .hero p {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  color: var(--text-light);
-  text-align: center;
-  font-family: var(--black-font-family);
+  color: #ffffff;
+  text-align: right;
+  font-size: 14px;
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 400;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-/* Special underline (only for h1 by default) */
-.hero h1::after {
-  background-color: var(--main-accent-color);
-  content: "";
-  display: block;
-  height: 5px;
-  margin: 20px auto 30px;
-  width: 128px;
-  transition: width .4s ease-in-out;
-}
-
-/* Remove underline when class applied */
-.hero.removeunderline h1::after,
-.hero.removeunderline h2::after,
-.hero.removeunderline h3::after,
-.hero.removeunderline h4::after,
-.hero.removeunderline h5::after,
-.hero.removeunderline h6::after {
+/* Remove default underline */
+.hero h1::after,
+.hero h2::after,
+.hero h3::after,
+.hero h4::after,
+.hero h5::after,
+.hero h6::after {
   display: none;
 }
 
@@ -59,49 +88,53 @@
 --------------------------- */
 .hero picture {
   position: absolute;
-  z-index: -1;
+  z-index: 0;
   inset: 0;
   box-sizing: border-box;
 }
 
 .hero img {
   object-fit: cover;
-  object-position: left;
+  object-position: center;
   width: 100%;
   height: 100%;
+  filter: brightness(0.9);
 }
 
 /* --------------------------
    Buttons
 --------------------------- */
-
+.hero .button-container {
+  text-align: right;
+  margin-top: 30px;
+}
 
 /* Primary CTA */
-.hero-wrapper .button-container.cta-button a.button {
-  background-color: var(--main-accent-color);
-  border: 2px solid var(--main-accent-color);
-}
-
-.hero-wrapper .button-container.cta-button a.button::after {
-  content: "\f105";
-  font-family: 'Font Awesome 5 Solid';
-  font-size: 20px;
-  margin-left: 8px;
+.hero-wrapper .button-container a.button,
+.hero .button-container a.button {
+  background-color: #1979c3;
+  border: none;
+  color: #ffffff;
+  padding: 14px 32px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 3px;
   transition: all 0.3s ease;
-  color: var(--text-light);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.hero-wrapper .button-container.cta-button a.button:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  color: var(--text-light) !important;
-  border-color: var(--text-light) !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
-  transform: translateY(-1px);
+.hero-wrapper .button-container a.button::after,
+.hero .button-container a.button::after {
+  content: none;
 }
 
-.hero-wrapper .button-container.cta-button a.button:hover::after {
-  color: var(--text-light) !important;
-  transform: translateX(2px);
+.hero-wrapper .button-container a.button:hover,
+.hero .button-container a.button:hover {
+  background-color: #155a8a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
 }
 
 /* Secondary CTA */
@@ -334,24 +367,100 @@ picture {
    Responsive
 --------------------------- */
 @media (width >= 900px) {
-  .hero { padding: 40px 32px; }
-  .hero-wrapper a.button { padding: 14px 28px; font-size: 18px; }
-}
-
-@media (width < 1024px) {
-  .hero { min-height: 650px; }
-  
-  .hero.image-background-text-left {
-    padding: 50px 30px;
+  .hero { 
+    padding: 100px 0;
+    min-height: 500px;
   }
   
-  .hero.image-background-text-right {
-    padding: 50px 30px;
+  .hero > div {
+    max-width: 1264px;
+    padding: 0 60px;
+  }
+  
+  .hero > div > * {
+    max-width: 700px;
+  }
+  
+  .hero h1 {
+    font-size: 56px;
+  }
+}
+
+@media (width >= 1200px) {
+  .hero {
+    padding: 120px 0;
+  }
+  
+  .hero > div {
+    max-width: 1440px;
+    padding: 0 80px;
+  }
+  
+  .hero > div > * {
+    max-width: 800px;
+  }
+}
+
+@media (width < 900px) {
+  .hero {
+    padding: 60px 0;
+    min-height: 400px;
+    justify-content: center;
+  }
+  
+  .hero > div {
+    text-align: center;
+    align-items: center;
+    padding: 0 24px;
+  }
+  
+  .hero > div > * {
+    max-width: 100%;
+  }
+  
+  .hero h1,
+  .hero h2,
+  .hero h3,
+  .hero h4,
+  .hero h5,
+  .hero h6,
+  .hero p {
+    text-align: center;
+  }
+  
+  .hero h1 {
+    font-size: 36px;
+  }
+  
+  .hero .button-container {
+    text-align: center;
   }
 }
 
 @media (width < 768px) {
-  .hero { min-height: 600px; }
+  .hero {
+    padding: 50px 0;
+    min-height: 350px;
+  }
+  
+  .hero > div {
+    padding: 0 20px;
+  }
+  
+  .hero h1 {
+    font-size: 28px;
+  }
+  
+  .hero p {
+    font-size: 12px;
+  }
+  
+  .hero-wrapper .button-container a.button,
+  .hero .button-container a.button {
+    padding: 12px 24px;
+    font-size: 12px;
+  }
+}
 
   .hero.image-left,
   .hero.image-right {
