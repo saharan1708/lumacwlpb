@@ -38,7 +38,7 @@
 
     /* fonts */
     --body-font-family: "Adobe Clean", roboto, roboto-fallback, sans-serif;
-    --heading-font-family: "Adobe Clean Bold", roboto-condensed,
+    --heading-font-family: "Adobe Clean", roboto-condensed,
         roboto-condensed-fallback, sans-serif;
     --light-font-family: "Adobe Clean Light", roboto, roboto-fallback,
         sans-serif;
@@ -53,12 +53,12 @@
     --body-font-size-xs: 17px;
 
     /* heading sizes */
-    --heading-font-size-xxl: 55px;
-    --heading-font-size-xl: 44px;
-    --heading-font-size-l: 34px;
-    --heading-font-size-m: 27px;
-    --heading-font-size-s: 24px;
-    --heading-font-size-xs: 22px;
+    --heading-font-size-xxl: 2em;
+    --heading-font-size-xl: 1.5em;
+    --heading-font-size-l: 1.25em;
+    --heading-font-size-m: 1.125em;
+    --heading-font-size-s: 1.125em;
+    --heading-font-size-xs: 1em;
 
     /* numbers */
     --border-radius-none: 0rem;
@@ -117,12 +117,12 @@
         --body-font-size-xs: 14px;
 
         /* heading sizes */
-        --heading-font-size-xxl: 45px;
-        --heading-font-size-xl: 36px;
-        --heading-font-size-l: 28px;
-        --heading-font-size-m: 22px;
-        --heading-font-size-s: 20px;
-        --heading-font-size-xs: 18px;
+        --heading-font-size-xxl: 2em;
+        --heading-font-size-xl: 1.5em;
+        --heading-font-size-l: 1.25em;
+        --heading-font-size-m: 1.125em;
+        --heading-font-size-s: 1.125em;
+        --heading-font-size-xs: 1em;
     }
 }
 
@@ -404,16 +404,17 @@ h3,
 h4,
 h5,
 h6 {
-    margin-top: 0.8em;
-    margin-bottom: 0.25em;
+    margin-top: 0.67em;
+    margin-bottom: 0.67em;
     font-family: var(--heading-font-family);
     font-weight: 600;
-    line-height: 1.25;
+    line-height: 2.25;
     scroll-margin: 40px;
 }
 
 h1 {
     font-size: var(--heading-font-size-xxl);
+    text-align: center;
 }
 
 h2 {
@@ -1064,4 +1065,99 @@ table {
 
 .cta-button-dark a.button:active::after {
     transform: translateX(0);
+}
+
+/* Feature Support Cards - Luma Style */
+.cards.feature-support {
+    padding: 0;
+    margin: 0;
+    margin-top: 40px;
+}
+
+.cards.feature-support > ul {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.cards.feature-support > ul > li.image-left {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    background: transparent;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0;
+    margin: 0;
+    width: 384px;
+}
+
+.cards.feature-support > ul > li.image-left .cards-card-image {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    flex-grow: unset !important;
+    flex-basis: unset !important;
+}
+
+.cards.feature-support > ul > li.image-left .cards-card-image img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.cards.feature-support > ul > li.image-left .cards-card-body {
+    flex: unset !important;
+    flex-grow: unset !important;
+    flex-basis: unset !important;
+    padding: 0;
+    margin: 0 !important;
+}
+
+.cards-config {
+    display: none;
+}
+
+.cards.feature-support > ul > li.image-left .cards-card-body h1,
+.cards.feature-support > ul > li.image-left .cards-card-body h2,
+.cards.feature-support > ul > li.image-left .cards-card-body h3,
+.cards.feature-support > ul > li.image-left .cards-card-body h4 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1.3;
+    color: #333333;
+}
+
+.cards.feature-support > ul > li.image-left .cards-card-body p {
+    margin: 0 !important;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #666666;
+    font-weight: 400;
+}
+
+/* Responsive for Feature Support Cards */
+@media (max-width: 900px) {
+    .cards.feature-support {
+        padding: 20px;
+    }
+
+    .cards.feature-support > ul {
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .cards.feature-support > ul > li.image-left {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
 }
