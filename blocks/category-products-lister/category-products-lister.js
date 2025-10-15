@@ -17,8 +17,10 @@ function buildCard(item, isAuthor) {
     card.addEventListener('click', () => {
       const currentPath = window.location.pathname;
       // Replace the last segment (e.g., 'men-products') with 'product'
-      const newPath = currentPath.substring(0, currentPath.lastIndexOf('/')) + '/product';
-      window.location.href = `${newPath}?productId=${encodeURIComponent(productId)}`;
+      const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+      // On author add .html extension, on publish don't
+      const productPath = isAuthor ? `${basePath}/product.html` : `${basePath}/product`;
+      window.location.href = `${productPath}?productId=${encodeURIComponent(productId)}`;
     });
   }
 
