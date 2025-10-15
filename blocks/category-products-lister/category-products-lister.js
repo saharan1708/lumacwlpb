@@ -49,24 +49,12 @@ async function fetchProducts(path) {
   }
 }
 
-function renderHeader(container, selectedTags) {
-  if (!selectedTags || selectedTags.length === 0) return;
-  const wrap = document.createElement('div');
-  wrap.className = 'cpl-tags';
-  const list = Array.isArray(selectedTags) ? selectedTags : `${selectedTags}`.split(',');
-  list.map((t) => `${t}`.trim()).filter(Boolean).forEach((tag) => {
-    const chip = document.createElement('span');
-    chip.className = 'cpl-tag';
-    chip.textContent = tag;
-    wrap.append(chip);
-  });
-  container.append(wrap);
-}
+// removed tag rendering
 
 export default async function decorate(block) {
   const cfg = readBlockConfig(block);
   let folderHref = cfg?.folder || cfg?.reference || cfg?.path || '';
-  const tags = cfg?.tags || cfg?.['cq:tags'] || '';
+  // tags removed
 
   // Normalize folder path to pathname if an absolute URL is provided
   try {
@@ -79,7 +67,7 @@ export default async function decorate(block) {
   // Clear author table
   block.innerHTML = '';
 
-  renderHeader(block, tags);
+  // header tags removed
 
   const grid = document.createElement('div');
   grid.className = 'cpl-grid';
