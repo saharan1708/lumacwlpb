@@ -33,7 +33,7 @@
           "label": "Tags",
         "valueType": "string",
         "multi": true,
-        "rootPath": "/content/cq:tags"
+        "rootPath": "/content/cq:tags/lumaproducts"
         }
       ]
     }
