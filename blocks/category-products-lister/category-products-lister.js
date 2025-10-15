@@ -5,7 +5,7 @@ const GQL_BASE = 'https://publish-p168578-e1802821.adobeaemcloud.com/graphql/exe
 
 function buildCard(item, isAuthor) {
   const { id, sku, name, image = {}, category = [] } = item || {};
-  const imgUrl = isAuthor ? image?._authorUrl : image?._publishUrl;
+  let imgUrl = isAuthor ? image?._authorUrl : image?._publishUrl;
   const productId = sku || id || '';
 
   const card = document.createElement('article');
@@ -22,11 +22,27 @@ function buildCard(item, isAuthor) {
     });
   }
 
-  const picture = imgUrl ? createOptimizedPicture(imgUrl, name || 'Product image', false, [
-    { media: '(min-width: 900px)', width: '600' },
-    { media: '(min-width: 600px)', width: '400' },
-    { width: '320' },
-  ]) : null;
+  // On publish, if imgUrl is a full URL, createOptimizedPicture needs just the path
+  // But we need the full publish URL, so create the picture element manually for publish
+  let picture = null;
+  if (imgUrl) {
+    if (!isAuthor && imgUrl.startsWith('http')) {
+      // For publish with full URL, use it directly in an img tag
+      picture = document.createElement('picture');
+      const img = document.createElement('img');
+      img.src = imgUrl;
+      img.alt = name || 'Product image';
+      img.loading = 'lazy';
+      picture.appendChild(img);
+    } else {
+      // For author or relative paths, use createOptimizedPicture
+      picture = createOptimizedPicture(imgUrl, name || 'Product image', false, [
+        { media: '(min-width: 900px)', width: '600' },
+        { media: '(min-width: 600px)', width: '400' },
+        { width: '320' },
+      ]);
+    }
+  }
 
   const imgWrap = document.createElement('div');
   imgWrap.className = 'cpl-card-media';
