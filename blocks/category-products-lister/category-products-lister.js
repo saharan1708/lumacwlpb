@@ -64,9 +64,16 @@ function renderHeader(container, selectedTags) {
 }
 
 export default async function decorate(block) {
+  // Extract folder path from Universal Editor authored markup
+  let folderHref = block.querySelector('a[href]')?.href 
+    || block.querySelector('a[href]')?.textContent?.trim() 
+    || '';
+
+  // Also try readBlockConfig as fallback for document-based authoring
   const cfg = readBlockConfig(block);
-  let folderHref = cfg?.folder || cfg?.reference || cfg?.path || '';
-  const tags = cfg?.tags || cfg?.['cq:tags'] || '';
+  if (!folderHref) {
+    folderHref = cfg?.folder || cfg?.reference || cfg?.path || '';
+  }
 
   // Normalize folder path to pathname if an absolute URL is provided
   try {
@@ -75,6 +82,9 @@ export default async function decorate(block) {
       folderHref = u.pathname;
     }
   } catch (e) { /* ignore */ }
+
+  // Extract tags - for Universal Editor they'll be in data attributes
+  const tags = block.dataset?.['cqTags'] || cfg?.tags || cfg?.['cq:tags'] || '';
 
   // Clear author table
   block.innerHTML = '';
