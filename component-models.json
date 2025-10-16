@@ -6522,5 +6522,18 @@
         "rootPath": "/content/cq:tags/lumaproducts"
       }
     ]
+  },
+  {
+    "id": "product-detail",
+    "fields": [
+      {
+        "component": "aem-content",
+        "name": "folder",
+        "label": "Product Folder",
+        "valueType": "string",
+        "required": true,
+        "rootPath": "/content/dam"
+      }
+    ]
   }
 ]
