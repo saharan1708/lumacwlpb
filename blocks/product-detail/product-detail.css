@@ -48,6 +48,7 @@ main .product-detail .pd-image img {
 /* Content section */
 main .product-detail .pd-content {
   padding-top: 8px;
+  text-align: left;
 }
 
 main .product-detail .pd-category {
@@ -60,6 +61,7 @@ main .product-detail .pd-category {
   letter-spacing: 1.5px;
   text-transform: uppercase;
   line-height: 1;
+  text-align: left;
 }
 
 main .product-detail .pd-name {
@@ -70,6 +72,7 @@ main .product-detail .pd-name {
   line-height: 1.2;
   color: #212529;
   letter-spacing: -0.02em;
+  text-align: left;
 }
 
 main .product-detail .pd-price {
@@ -80,6 +83,7 @@ main .product-detail .pd-price {
   font-weight: 700;
   color: #212529;
   line-height: 1;
+  text-align: left;
 }
 
 main .product-detail .pd-description {
