@@ -11,6 +11,9 @@ function restructureHeroDOM(block, layoutStyle) {
   // Split layouts that need restructuring
   const splitLayouts = ['image-left', 'image-right', 'image-top', 'image-bottom'];
   
+  // eslint-disable-next-line no-console
+  console.log('Restructure called with layout:', layoutStyle, 'Needs restructure:', splitLayouts.includes(layoutStyle));
+  
   if (!splitLayouts.includes(layoutStyle)) {
     return; // No restructuring needed for overlay or background layouts
   }
@@ -22,7 +25,17 @@ function restructureHeroDOM(block, layoutStyle) {
   // Get the text content div (2nd child)
   const textDiv = block.querySelector(':scope > div:nth-child(2)');
   
+  // eslint-disable-next-line no-console
+  console.log('Found elements:', {
+    pictureDiv: !!pictureDiv,
+    picture: !!picture,
+    textDiv: !!textDiv,
+    blockChildren: block.children.length
+  });
+  
   if (!picture || !textDiv) {
+    // eslint-disable-next-line no-console
+    console.warn('Missing required elements for restructuring');
     return; // Missing required elements
   }
 
@@ -46,6 +59,9 @@ function restructureHeroDOM(block, layoutStyle) {
     block.appendChild(textContainer);
     block.appendChild(imageContainer);
   }
+  
+  // eslint-disable-next-line no-console
+  console.log('Restructuring complete. New structure:', block.innerHTML.substring(0, 200));
 }
 
 /**
@@ -53,16 +69,38 @@ function restructureHeroDOM(block, layoutStyle) {
  * @param {Element} block
  */
 export default function decorate(block) {
-  // Get the enable underline setting from the block content (3rd div)
-  const enableUnderline = block.querySelector(':scope div:nth-child(3) > div')?.textContent?.trim() || 'true';
+  // Try to get values from data attributes first (Universal Editor)
+  let enableUnderline = block.dataset?.enableunderline || null;
+  let layoutStyle = block.dataset?.herolayout || null;
+  let ctaStyle = block.dataset?.ctastyle || null;
+  let backgroundStyle = block.dataset?.backgroundstyle || null;
+
+  // Fallback to reading from block content divs (Document-based authoring)
+  if (!enableUnderline) {
+    enableUnderline = block.querySelector(':scope div:nth-child(3) > div')?.textContent?.trim() || 'true';
+  }
   
-  // Get the layout Style from the block content (4th div)
-  const layoutStyle = block.querySelector(':scope div:nth-child(4) > div')?.textContent?.trim() || 'overlay';
+  if (!layoutStyle) {
+    layoutStyle = block.querySelector(':scope div:nth-child(4) > div')?.textContent?.trim() || 'overlay';
+  }
 
-  // Get the CTA style from the block content (5th div)
-  const ctaStyle = block.querySelector(':scope div:nth-child(5) > div')?.textContent?.trim() || 'default';
+  if (!ctaStyle) {
+    ctaStyle = block.querySelector(':scope div:nth-child(5) > div')?.textContent?.trim() || 'default';
+  }
 
-  const backgroundStyle = block.querySelector(':scope div:nth-child(6) > div')?.textContent?.trim() || 'default';
+  if (!backgroundStyle) {
+    backgroundStyle = block.querySelector(':scope div:nth-child(6) > div')?.textContent?.trim() || 'default';
+  }
+
+  // Debug logging
+  // eslint-disable-next-line no-console
+  console.log('Hero Component Config:', {
+    enableUnderline,
+    layoutStyle,
+    ctaStyle,
+    backgroundStyle,
+    blockDataset: block.dataset
+  });
 
   // Hide configuration divs before restructuring
   const underlineDiv = block.querySelector(':scope div:nth-child(3)');
