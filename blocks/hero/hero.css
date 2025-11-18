@@ -201,29 +201,13 @@
 .hero.image-top {
   flex-direction: column;
   justify-content: flex-start;
-  align-items: stretch;
-}
-
-.hero.image-top > div {
-  padding: 0;
-  margin: 0;
-  width: 100%;
-  max-width: 100%;
-  align-items: stretch;
+  align-items: center;
 }
 
 .hero.image-bottom {
   flex-direction: column-reverse;
   justify-content: flex-start;
-  align-items: stretch;
-}
-
-.hero.image-bottom > div {
-  padding: 0;
-  margin: 0;
-  width: 100%;
-  max-width: 100%;
-  align-items: stretch;
+  align-items: center;
 }
 
 /* Image Background Text Left - Text overlaid on background image, left-aligned */
