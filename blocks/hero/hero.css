@@ -26,12 +26,21 @@
 .section:has(.hero.image-bottom) {
   max-width: 100% !important;
   padding: 0 !important;
+  margin: 0 !important;
 }
 
 .section:has(.hero.image-top) > div,
 .section:has(.hero.image-bottom) > div {
   max-width: 100% !important;
   padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Also remove constraints from main if it contains these hero types */
+main:has(.hero.image-top),
+main:has(.hero.image-bottom) {
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .hero {
@@ -288,9 +297,10 @@
 .hero.image-top .hero-image-container,
 .hero.image-bottom .hero-image-container {
   width: 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
+  max-width: none;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
 }
 
 .hero.image-top .hero-image-container picture,
