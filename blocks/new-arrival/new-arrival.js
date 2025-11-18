@@ -71,7 +71,9 @@ async function fetchProducts(path) {
     const url = `${GQL_BASE};_path=${path}`;
     const resp = await fetch(url, { method: 'GET' });
     const json = await resp.json();
-    return json?.data?.productsModelList?.items || [];
+    const items = json?.data?.productsModelList?.items || [];
+    // Filter out null/invalid products
+    return items.filter(item => item && item.sku);
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error('New Arrival: fetch error', e);
@@ -280,6 +282,11 @@ export default async function decorate(block) {
   // Fetch all products
   const allProducts = await fetchProducts(folderHref);
   
+  // eslint-disable-next-line no-console
+  console.log('New Arrival - All products fetched:', allProducts.length);
+  // eslint-disable-next-line no-console
+  console.log('New Arrival - Extracted SKUs:', skuList);
+  
   if (!allProducts || allProducts.length === 0) {
     const empty = document.createElement('p');
     empty.className = 'na-empty';
@@ -291,10 +298,17 @@ export default async function decorate(block) {
   // Filter products by SKU
   const filteredProducts = filterProductsBySKU(allProducts, skuList);
   
+  // eslint-disable-next-line no-console
+  console.log('New Arrival - Filtered products:', filteredProducts.length, filteredProducts.map(p => p.sku));
+  
   if (filteredProducts.length === 0) {
     const empty = document.createElement('p');
     empty.className = 'na-empty';
-    empty.textContent = 'No matching products found for the specified SKUs.';
+    if (skuList.length === 0) {
+      empty.textContent = 'Please add SKUs to filter products.';
+    } else {
+      empty.textContent = `No matching products found for SKUs: ${skuList.join(', ')}`;
+    }
     block.append(empty);
     return;
   }
