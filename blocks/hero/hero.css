@@ -201,13 +201,17 @@
 .hero.image-top {
   flex-direction: column;
   justify-content: flex-start;
-  align-items: center;
+  align-items: stretch;
+  padding: 0;
+  width: 100%;
 }
 
 .hero.image-bottom {
   flex-direction: column-reverse;
   justify-content: flex-start;
-  align-items: center;
+  align-items: stretch;
+  padding: 0;
+  width: 100%;
 }
 
 /* Image Background Text Left - Text overlaid on background image, left-aligned */
