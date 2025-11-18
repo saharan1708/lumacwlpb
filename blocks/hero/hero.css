@@ -423,6 +423,17 @@ picture {
   .hero h1 {
     font-size: 56px;
   }
+  
+  /* Ensure split layouts are horizontal on desktop */
+  .hero.image-left,
+  .hero.image-right {
+    flex-direction: row !important;
+  }
+  
+  .hero.image-top,
+  .hero.image-bottom {
+    flex-direction: column !important;
+  }
 }
 
 @media (width >= 1200px) {
@@ -499,8 +510,8 @@ picture {
     padding: 12px 24px;
     font-size: 12px;
   }
-}
-
+  
+  /* Mobile: Stack layouts vertically */
   .hero.image-left,
   .hero.image-right {
     flex-direction: column;
@@ -595,6 +606,8 @@ picture {
     text-align: center;
   }
 }
+
+/* END OF MEDIA QUERIES - Mobile responsive section above */
 
 /* --------------------------
    Background Style Variations
