@@ -12,6 +12,28 @@
   margin-top: 10px;
 }
 
+/* Remove padding/margin for image-top and image-bottom parent containers */
+.hero.image-top.block,
+.hero.image-bottom.block {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Allow section to be full width for image-top and image-bottom */
+.section:has(.hero.image-top),
+.section:has(.hero.image-bottom) {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+.section:has(.hero.image-top) > div,
+.section:has(.hero.image-bottom) > div {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
 .hero {
   position: relative;
   padding: 80px 40px;
@@ -265,15 +287,10 @@
 
 .hero.image-top .hero-image-container,
 .hero.image-bottom .hero-image-container {
-  width: 100vw;
-  max-width: 100vw;
+  width: 100%;
+  max-width: 100%;
   margin: 0;
   padding: 0;
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
 }
 
 .hero.image-top .hero-image-container picture,
