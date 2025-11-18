@@ -12,29 +12,7 @@
   margin-top: 10px;
 }
 
-/* Remove padding/margin for image-top and image-bottom parent containers */
-.hero.image-top.block,
-.hero.image-bottom.block {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  max-width: 100%;
-}
-
-/* Allow section to be full width ONLY for image-top and image-bottom */
-.section:has(.hero.image-top):not(:has(.hero.image-left, .hero.image-right, .hero.overlay, .hero.image-background-text-left, .hero.image-background-text-right)),
-.section:has(.hero.image-bottom):not(:has(.hero.image-left, .hero.image-right, .hero.overlay, .hero.image-background-text-left, .hero.image-background-text-right)) {
-  max-width: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.section:has(.hero.image-top):not(:has(.hero.image-left, .hero.image-right, .hero.overlay, .hero.image-background-text-left, .hero.image-background-text-right)) > div,
-.section:has(.hero.image-bottom):not(:has(.hero.image-left, .hero.image-right, .hero.overlay, .hero.image-background-text-left, .hero.image-background-text-right)) > div {
-  max-width: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
+/* Image-top and image-bottom should work within normal container constraints */
 
 .hero {
   position: relative;
@@ -290,10 +268,11 @@
 .hero.image-top .hero-image-container,
 .hero.image-bottom .hero-image-container {
   width: 100%;
-  max-width: none;
-  margin: 0 !important;
-  padding: 0 !important;
-  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 8px;
 }
 
 .hero.image-top .hero-image-container picture,
@@ -332,15 +311,14 @@
 
 .hero.image-top .hero-text-container,
 .hero.image-bottom .hero-text-container {
-  padding: 80px 40px;
+  padding: 60px 40px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  background-color: #fff;
+  max-width: 100%;
+  margin: 0;
 }
 
 picture {
