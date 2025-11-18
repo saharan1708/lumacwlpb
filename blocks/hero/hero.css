@@ -238,26 +238,52 @@
   z-index: 1;
 }
 
-.hero.image-left > div:first-child picture,
-.hero.image-right > div:first-child picture {
+/* Image Container Styling for Split Layouts */
+.hero.image-left .hero-image-container,
+.hero.image-right .hero-image-container {
+  flex: 0 0 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+}
+
+.hero.image-left .hero-image-container picture,
+.hero.image-right .hero-image-container picture {
   height: 100%;
   width: 100%;
 }
 
-.hero.image-top picture,
-.hero.image-bottom picture {
+.hero.image-left .hero-image-container img,
+.hero.image-right .hero-image-container img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  filter: none;
+}
+
+.hero.image-top .hero-image-container,
+.hero.image-bottom .hero-image-container {
+  width: 100%;
+}
+
+.hero.image-top .hero-image-container picture,
+.hero.image-bottom .hero-image-container picture {
   width: 100%;
   height: 400px;
 }
 
-/* Text align adjustments */
-.hero.image-left > div:first-child,
-.hero.image-right > div:first-child {
-  flex: 0 0 50%;
+.hero.image-top .hero-image-container img,
+.hero.image-bottom .hero-image-container img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  filter: none;
 }
 
-.hero.image-left > div:nth-child(2),
-.hero.image-right > div:nth-child(2) {
+/* Text Container Styling for Split Layouts */
+.hero.image-left .hero-text-container,
+.hero.image-right .hero-text-container {
   flex: 0 0 50%;
   text-align: left;
   display: flex;
@@ -267,8 +293,17 @@
   box-sizing: border-box;
 }
 
-.hero.image-right > div:nth-child(2) {
+.hero.image-right .hero-text-container {
   padding-left: 80px;
+}
+
+.hero.image-top .hero-text-container,
+.hero.image-bottom .hero-text-container {
+  padding: 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 picture {
@@ -282,26 +317,24 @@ picture {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   overflow: hidden;
 }
-.hero.image-left h2,
-.hero.image-left h3,
-.hero.image-left h4,
-.hero.image-left h5,
-.hero.image-left h6,
-.hero.image-left p,
-.hero.image-right h2,
-.hero.image-right h3,
-.hero.image-right h4,
-.hero.image-right h5,
-.hero.image-right h6,
-.hero.image-right p {
+.hero.image-left .hero-text-container h1,
+.hero.image-left .hero-text-container h2,
+.hero.image-left .hero-text-container h3,
+.hero.image-left .hero-text-container h4,
+.hero.image-left .hero-text-container h5,
+.hero.image-left .hero-text-container h6,
+.hero.image-left .hero-text-container p,
+.hero.image-right .hero-text-container h1,
+.hero.image-right .hero-text-container h2,
+.hero.image-right .hero-text-container h3,
+.hero.image-right .hero-text-container h4,
+.hero.image-right .hero-text-container h5,
+.hero.image-right .hero-text-container h6,
+.hero.image-right .hero-text-container p {
   text-align: left;
-  margin: 0;
+  margin: 0 0 20px 0;
   width: 100%;
   max-width: none;
-  color: var(--text-color);
-    text-shadow: unset;
-}
-.hero.image-left h1,.hero.image-right h1{
   color: var(--text-color);
   text-shadow: unset;
 }
@@ -344,24 +377,30 @@ picture {
   margin-top: 30px;
 }
 
-.hero.image-top h1,
-.hero.image-top h2,
-.hero.image-top h3,
-.hero.image-top h4,
-.hero.image-top h5,
-.hero.image-top h6,
-.hero.image-top p,
-.hero.image-bottom h1,
-.hero.image-bottom h2,
-.hero.image-bottom h3,
-.hero.image-bottom h4,
-.hero.image-bottom h5,
-.hero.image-bottom h6,
-.hero.image-bottom p{
+.hero.image-top .hero-text-container h1,
+.hero.image-top .hero-text-container h2,
+.hero.image-top .hero-text-container h3,
+.hero.image-top .hero-text-container h4,
+.hero.image-top .hero-text-container h5,
+.hero.image-top .hero-text-container h6,
+.hero.image-top .hero-text-container p,
+.hero.image-bottom .hero-text-container h1,
+.hero.image-bottom .hero-text-container h2,
+.hero.image-bottom .hero-text-container h3,
+.hero.image-bottom .hero-text-container h4,
+.hero.image-bottom .hero-text-container h5,
+.hero.image-bottom .hero-text-container h6,
+.hero.image-bottom .hero-text-container p {
   text-align: center;
   max-width: none;
   color: var(--text-color);
-    text-shadow: unset;
+  text-shadow: unset;
+  margin: 0 0 20px 0;
+}
+
+.hero.image-top .hero-text-container .button-container,
+.hero.image-bottom .hero-text-container .button-container {
+  text-align: center;
 }
 /* --------------------------
    Responsive
@@ -468,36 +507,50 @@ picture {
     gap: 20px;
   }
 
-  .hero.image-left picture,
-  .hero.image-right picture {
+  .hero.image-left .hero-image-container,
+  .hero.image-right .hero-image-container {
+    width: 100%;
+    flex: none;
+  }
+
+  .hero.image-left .hero-image-container picture,
+  .hero.image-right .hero-image-container picture {
     width: 100%;
     height: 300px;
     flex: none;
   }
 
-  .hero.image-left > div:last-child,
-  .hero.image-right > div:last-child {
+  .hero.image-left .hero-text-container,
+  .hero.image-right .hero-text-container {
     text-align: center;
+    padding: 20px;
   }
 
-  .hero.image-left h2,
-  .hero.image-left h3,
-  .hero.image-left h4,
-  .hero.image-left h5,
-  .hero.image-left h6,
-  .hero.image-left p,
-  .hero.image-right h2,
-  .hero.image-right h3,
-  .hero.image-right h4,
-  .hero.image-right h5,
-  .hero.image-right h6,
-  .hero.image-right p {
+  .hero.image-left .hero-text-container h1,
+  .hero.image-left .hero-text-container h2,
+  .hero.image-left .hero-text-container h3,
+  .hero.image-left .hero-text-container h4,
+  .hero.image-left .hero-text-container h5,
+  .hero.image-left .hero-text-container h6,
+  .hero.image-left .hero-text-container p,
+  .hero.image-right .hero-text-container h1,
+  .hero.image-right .hero-text-container h2,
+  .hero.image-right .hero-text-container h3,
+  .hero.image-right .hero-text-container h4,
+  .hero.image-right .hero-text-container h5,
+  .hero.image-right .hero-text-container h6,
+  .hero.image-right .hero-text-container p {
     text-align: center;
     margin: 0 auto;
   }
 
-  .hero.image-top picture,
-  .hero.image-bottom picture {
+  .hero.image-left .hero-text-container .button-container,
+  .hero.image-right .hero-text-container .button-container {
+    text-align: center;
+  }
+
+  .hero.image-top .hero-image-container picture,
+  .hero.image-bottom .hero-image-container picture {
     height: 250px;
   }
   
@@ -587,16 +640,24 @@ picture {
   border-color: var(--dark-color);
 }
 
-.hero.block.overlay div:nth-child(2),.hero.image-background-text-left div:nth-child(2),.hero.image-background-text-right div:nth-child(2) {
+/* Overlay and Background Text Layouts - Add semi-transparent background to text */
+.hero.overlay > div:nth-child(2),
+.hero.image-background-text-left > div:nth-child(2),
+.hero.image-background-text-right > div:nth-child(2) {
   padding: 20px;
   background: rgb(0 0 0 / 50%);
+  border-radius: 8px;
 }
 
 /*button theme hero specific*/
-.hero.block.overlay .button-container.cta-link a.button,.hero.image-background-text-left .button-container.cta-link a.button,.hero.image-background-text-right .button-container.cta-link a.button {
+.hero.overlay .button-container.cta-link a.button,
+.hero.image-background-text-left .button-container.cta-link a.button,
+.hero.image-background-text-right .button-container.cta-link a.button {
   color: var(--text-light);
 }
 
-.hero.block.overlay .button-container.cta-link a.button::after  ,.hero.image-background-text-left .button-container.cta-link a.button::after,.hero.image-background-text-right .button-container.cta-link a.button::after  {
+.hero.overlay .button-container.cta-link a.button::after,
+.hero.image-background-text-left .button-container.cta-link a.button::after,
+.hero.image-background-text-right .button-container.cta-link a.button::after {
   color: var(--text-light);
 }
