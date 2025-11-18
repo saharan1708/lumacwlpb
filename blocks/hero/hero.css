@@ -216,7 +216,7 @@
   justify-content: flex-start;
 }
 .hero.image-right {
-  flex-direction: row-reverse;
+  flex-direction: row;
   justify-content: flex-start;
 }
 .hero.image-top {
