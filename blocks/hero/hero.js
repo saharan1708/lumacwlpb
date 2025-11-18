@@ -53,9 +53,13 @@ function restructureHeroDOM(block, layoutStyle) {
   
   // Append in correct order based on layout
   if (layoutStyle === 'image-left' || layoutStyle === 'image-top') {
+    // eslint-disable-next-line no-console
+    console.log(`${layoutStyle}: Appending [image, text]`);
     block.appendChild(imageContainer);
     block.appendChild(textContainer);
   } else {
+    // eslint-disable-next-line no-console
+    console.log(`${layoutStyle}: Appending [text, image]`);
     block.appendChild(textContainer);
     block.appendChild(imageContainer);
   }
