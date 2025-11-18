@@ -102,26 +102,19 @@ export default function decorate(block) {
     blockDataset: block.dataset
   });
 
-  // Hide configuration divs before restructuring
-  const underlineDiv = block.querySelector(':scope div:nth-child(3)');
-  if (underlineDiv) {
-    underlineDiv.style.display = 'none';
-  }
+  // Remove configuration divs before restructuring (not just hide them)
+  const underlineDiv = block.querySelector(':scope > div:nth-child(3)');
+  const layoutStyleDiv = block.querySelector(':scope > div:nth-child(4)');
+  const ctaStyleDiv = block.querySelector(':scope > div:nth-child(5)');
+  const backgroundStyleDiv = block.querySelector(':scope > div:nth-child(6)');
   
-  const layoutStyleDiv = block.querySelector(':scope div:nth-child(4)');
-  if (layoutStyleDiv) {
-    layoutStyleDiv.style.display = 'none';
-  }
+  if (underlineDiv) underlineDiv.remove();
+  if (layoutStyleDiv) layoutStyleDiv.remove();
+  if (ctaStyleDiv) ctaStyleDiv.remove();
+  if (backgroundStyleDiv) backgroundStyleDiv.remove();
 
-  const ctaStyleDiv = block.querySelector(':scope div:nth-child(5)');
-  if (ctaStyleDiv) {
-    ctaStyleDiv.style.display = 'none';
-  }
-
-  const backgroundStyleDiv = block.querySelector(':scope div:nth-child(6)');
-  if (backgroundStyleDiv) {
-    backgroundStyleDiv.style.display = 'none';
-  }
+  // eslint-disable-next-line no-console
+  console.log('After removing config divs, block children:', block.children.length);
 
   // Restructure DOM for split layouts BEFORE applying classes
   restructureHeroDOM(block, layoutStyle);
@@ -129,17 +122,26 @@ export default function decorate(block) {
   // Apply layout class
   if (layoutStyle) {
     block.classList.add(`${layoutStyle}`);
+    // eslint-disable-next-line no-console
+    console.log('Added layout class:', layoutStyle, 'Block classes:', block.className);
   }
 
   // Apply background style class
   if (backgroundStyle && backgroundStyle !== 'default') {
     block.classList.add(`${backgroundStyle}`);
+    // eslint-disable-next-line no-console
+    console.log('Added background class:', backgroundStyle);
   }
 
   // Add removeunderline class if underline is disabled
   if (enableUnderline.toLowerCase() === 'false') {
     block.classList.add('removeunderline');
   }
+  
+  // eslint-disable-next-line no-console
+  console.log('Final block classes:', block.className);
+  // eslint-disable-next-line no-console
+  console.log('Block structure:', block.children.length, 'children');
   
   // Find the button container within the hero block (after restructuring)
   const buttonContainer = block.querySelector('p.button-container');
