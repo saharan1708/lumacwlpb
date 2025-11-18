@@ -21,24 +21,17 @@
   max-width: 100%;
 }
 
-/* Allow section to be full width for image-top and image-bottom */
-.section:has(.hero.image-top),
-.section:has(.hero.image-bottom) {
+/* Allow section to be full width ONLY for image-top and image-bottom */
+.section:has(.hero.image-top):not(:has(.hero.image-left, .hero.image-right, .hero.overlay, .hero.image-background-text-left, .hero.image-background-text-right)),
+.section:has(.hero.image-bottom):not(:has(.hero.image-left, .hero.image-right, .hero.overlay, .hero.image-background-text-left, .hero.image-background-text-right)) {
   max-width: 100% !important;
   padding: 0 !important;
   margin: 0 !important;
 }
 
-.section:has(.hero.image-top) > div,
-.section:has(.hero.image-bottom) > div {
+.section:has(.hero.image-top):not(:has(.hero.image-left, .hero.image-right, .hero.overlay, .hero.image-background-text-left, .hero.image-background-text-right)) > div,
+.section:has(.hero.image-bottom):not(:has(.hero.image-left, .hero.image-right, .hero.overlay, .hero.image-background-text-left, .hero.image-background-text-right)) > div {
   max-width: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-/* Also remove constraints from main if it contains these hero types */
-main:has(.hero.image-top),
-main:has(.hero.image-bottom) {
   padding: 0 !important;
   margin: 0 !important;
 }
