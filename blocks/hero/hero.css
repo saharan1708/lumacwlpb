@@ -12,6 +12,27 @@
   margin-top: 10px;
 }
 
+/* For image-top/bottom, make hero wrapper truly full width */
+.hero-container:has(.hero.image-top) .hero-wrapper,
+.hero-container:has(.hero.image-bottom) .hero-wrapper {
+  max-width: 100% !important;
+  padding: 0 !important;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Also target the section itself to remove constraints */
+.section.hero-container:has(.hero.image-top),
+.section.hero-container:has(.hero.image-bottom) {
+  padding: 0 !important;
+}
+
+.section.hero-container:has(.hero.image-top) > div,
+.section.hero-container:has(.hero.image-bottom) > div {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
 /* Image-top and image-bottom should work within normal container constraints */
 
 .hero {
