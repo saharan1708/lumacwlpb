@@ -203,9 +203,26 @@
   justify-content: flex-start;
   align-items: stretch;
 }
+
+.hero.image-top > div {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  align-items: stretch;
+}
+
 .hero.image-bottom {
   flex-direction: column-reverse;
   justify-content: flex-start;
+  align-items: stretch;
+}
+
+.hero.image-bottom > div {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
   align-items: stretch;
 }
 
@@ -277,6 +294,7 @@
   padding: 0;
   overflow: hidden;
   border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .hero.image-top .hero-image-container picture,
@@ -286,6 +304,7 @@
   display: block;
   margin: 0;
   padding: 0;
+  line-height: 0;
 }
 
 .hero.image-top .hero-image-container img,
@@ -323,6 +342,7 @@
   width: 100%;
   max-width: 100%;
   margin: 0;
+  flex-shrink: 0;
 }
 
 picture {
