@@ -28,18 +28,11 @@
           "validation": { "rootPath": "/content/dam" }
         },
         {
-          "component": "multifield",
+          "component": "text",
           "name": "skus",
           "label": "Product SKUs",
-          "valueType": "string",
-          "fields": [
-            {
-              "component": "text",
-              "name": "sku",
-              "label": "SKU",
-              "valueType": "string"
-            }
-          ]
+          "valueType": "string[]",
+          "multi": true
         }
       ]
     }

@@ -95,27 +95,45 @@ function extractSKUs(block, cfg) {
   const skuList = [];
   
   // Try to extract from Universal Editor data attributes
-  // The multifield data might be stored as JSON in a data attribute
+  // With multi: true, the data comes as a string array
   const skusData = block.dataset?.skus;
   if (skusData) {
     try {
       const parsed = JSON.parse(skusData);
       if (Array.isArray(parsed)) {
-        parsed.forEach(item => {
-          if (item.sku) skuList.push(item.sku);
-        });
+        // Multi-field returns array of strings directly
+        skuList.push(...parsed.filter(Boolean));
+      } else if (typeof parsed === 'string' && parsed) {
+        // Single value
+        skuList.push(parsed);
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      // If not JSON, might be comma-separated string
+      if (typeof skusData === 'string' && skusData) {
+        const skus = skusData.split(',').map(s => s.trim()).filter(Boolean);
+        skuList.push(...skus);
+      }
+    }
   }
   
   // Fallback: Try to extract from block config (document-based authoring)
   // Look for rows with SKU values
   if (skuList.length === 0 && cfg) {
+    if (cfg.skus) {
+      const skusValue = cfg.skus;
+      if (Array.isArray(skusValue)) {
+        skuList.push(...skusValue.filter(Boolean));
+      } else if (typeof skusValue === 'string') {
+        const skus = skusValue.split(',').map(s => s.trim()).filter(Boolean);
+        skuList.push(...skus);
+      }
+    }
+    
+    // Also check for other SKU-related keys
     Object.keys(cfg).forEach(key => {
-      if (key.toLowerCase().includes('sku')) {
+      if (key.toLowerCase().includes('sku') && key !== 'skus') {
         const value = cfg[key];
         if (value) {
-          // Split by comma if multiple SKUs in one field
           const skus = value.split(',').map(s => s.trim()).filter(Boolean);
           skuList.push(...skus);
         }
