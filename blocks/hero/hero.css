@@ -247,40 +247,56 @@
 /* Image Background Text Left - Text overlaid on background image, left-aligned */
 .hero.image-background-text-left {
   justify-content: flex-start !important;
-  align-items: center !important;
+  align-items: flex-start !important;
   text-align: left;
   padding: 60px 40px;
 }
 
-.hero.image-background-text-left > div {
+/* Target the text div specifically (second div) */
+.hero.image-background-text-left > div:nth-child(2) {
   align-items: flex-start !important;
   text-align: left !important;
   max-width: 600px;
   margin: 0 !important;
   margin-right: auto !important;
+  margin-left: 0 !important;
 }
 
-.hero.image-background-text-left > div > * {
+.hero.image-background-text-left h1,
+.hero.image-background-text-left h2,
+.hero.image-background-text-left h3,
+.hero.image-background-text-left h4,
+.hero.image-background-text-left h5,
+.hero.image-background-text-left h6,
+.hero.image-background-text-left p {
   text-align: left !important;
 }
 
 /* Image Background Text Right - Text overlaid on background image, right-aligned */
 .hero.image-background-text-right {
   justify-content: flex-end !important;
-  align-items: center !important;
+  align-items: flex-end !important;
   text-align: right;
   padding: 60px 40px;
 }
 
-.hero.image-background-text-right > div {
+/* Target the text div specifically (second div) */
+.hero.image-background-text-right > div:nth-child(2) {
   align-items: flex-end !important;
   text-align: right !important;
   max-width: 600px;
   margin: 0 !important;
   margin-left: auto !important;
+  margin-right: 0 !important;
 }
 
-.hero.image-background-text-right > div > * {
+.hero.image-background-text-right h1,
+.hero.image-background-text-right h2,
+.hero.image-background-text-right h3,
+.hero.image-background-text-right h4,
+.hero.image-background-text-right h5,
+.hero.image-background-text-right h6,
+.hero.image-background-text-right p {
   text-align: right !important;
 }
 
