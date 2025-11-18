@@ -245,58 +245,76 @@
 }
 
 /* Image Background Text Left - Text overlaid on background image, left-aligned */
-.hero.image-background-text-left {
+.hero.block.image-background-text-left {
   justify-content: flex-start !important;
   align-items: flex-start !important;
-  text-align: left;
-  padding: 60px 40px;
+  text-align: left !important;
+  padding: 60px 40px !important;
 }
 
-/* Target the text div specifically (second div) */
-.hero.image-background-text-left > div:nth-child(2) {
+/* Target the text div specifically (second div) - very specific selector */
+.hero.block.image-background-text-left > div:nth-child(2),
+div.hero.image-background-text-left > div:nth-child(2) {
   align-items: flex-start !important;
   text-align: left !important;
-  max-width: 600px;
+  max-width: 600px !important;
   margin: 0 !important;
   margin-right: auto !important;
   margin-left: 0 !important;
+  padding-left: 0 !important;
 }
 
-.hero.image-background-text-left h1,
-.hero.image-background-text-left h2,
-.hero.image-background-text-left h3,
-.hero.image-background-text-left h4,
-.hero.image-background-text-left h5,
-.hero.image-background-text-left h6,
-.hero.image-background-text-left p {
+.hero.block.image-background-text-left h1,
+.hero.block.image-background-text-left h2,
+.hero.block.image-background-text-left h3,
+.hero.block.image-background-text-left h4,
+.hero.block.image-background-text-left h5,
+.hero.block.image-background-text-left h6,
+.hero.block.image-background-text-left p,
+div.hero.image-background-text-left h1,
+div.hero.image-background-text-left h2,
+div.hero.image-background-text-left h3,
+div.hero.image-background-text-left h4,
+div.hero.image-background-text-left h5,
+div.hero.image-background-text-left h6,
+div.hero.image-background-text-left p {
   text-align: left !important;
 }
 
 /* Image Background Text Right - Text overlaid on background image, right-aligned */
-.hero.image-background-text-right {
+.hero.block.image-background-text-right {
   justify-content: flex-end !important;
   align-items: flex-end !important;
-  text-align: right;
-  padding: 60px 40px;
+  text-align: right !important;
+  padding: 60px 40px !important;
 }
 
-/* Target the text div specifically (second div) */
-.hero.image-background-text-right > div:nth-child(2) {
+/* Target the text div specifically (second div) - very specific selector */
+.hero.block.image-background-text-right > div:nth-child(2),
+div.hero.image-background-text-right > div:nth-child(2) {
   align-items: flex-end !important;
   text-align: right !important;
-  max-width: 600px;
+  max-width: 600px !important;
   margin: 0 !important;
   margin-left: auto !important;
   margin-right: 0 !important;
+  padding-right: 0 !important;
 }
 
-.hero.image-background-text-right h1,
-.hero.image-background-text-right h2,
-.hero.image-background-text-right h3,
-.hero.image-background-text-right h4,
-.hero.image-background-text-right h5,
-.hero.image-background-text-right h6,
-.hero.image-background-text-right p {
+.hero.block.image-background-text-right h1,
+.hero.block.image-background-text-right h2,
+.hero.block.image-background-text-right h3,
+.hero.block.image-background-text-right h4,
+.hero.block.image-background-text-right h5,
+.hero.block.image-background-text-right h6,
+.hero.block.image-background-text-right p,
+div.hero.image-background-text-right h1,
+div.hero.image-background-text-right h2,
+div.hero.image-background-text-right h3,
+div.hero.image-background-text-right h4,
+div.hero.image-background-text-right h5,
+div.hero.image-background-text-right h6,
+div.hero.image-background-text-right p {
   text-align: right !important;
 }
 
