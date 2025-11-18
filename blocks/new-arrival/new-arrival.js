@@ -16,8 +16,28 @@ function buildCard(item, isAuthor) {
     card.style.cursor = 'pointer';
     card.addEventListener('click', () => {
       const currentPath = window.location.pathname;
-      // Replace the last segment with 'product'
-      const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+      
+      // Smart path construction: ensure we navigate to the correct product page
+      // Look for language code pattern (e.g., /en/, /fr/, /de/)
+      let basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+      
+      // If the current page doesn't have a language segment, try to add it
+      // Check if basePath ends with a language code pattern
+      const langPattern = /\/(en|fr|de|es|it|ja|zh|pt|nl|sv|da|no|fi)$/;
+      if (!langPattern.test(basePath) && !basePath.includes('/en/')) {
+        // Check if there's a language code in the path we can use
+        const pathMatch = currentPath.match(/\/(en|fr|de|es|it|ja|zh|pt|nl|sv|da|no|fi)\//);
+        if (pathMatch) {
+          // Language code found in path, use it
+          const langCode = pathMatch[1];
+          const langIndex = currentPath.indexOf(`/${langCode}/`);
+          basePath = currentPath.substring(0, langIndex + langCode.length + 1);
+        } else {
+          // Default to /en/ if no language code found
+          basePath = `${basePath}/en`;
+        }
+      }
+      
       // On author add .html extension, on publish don't
       const productPath = isAuthor ? `${basePath}/product.html` : `${basePath}/product`;
       window.location.href = `${productPath}?productId=${encodeURIComponent(productId)}`;
