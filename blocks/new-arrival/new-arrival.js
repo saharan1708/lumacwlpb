@@ -104,30 +104,49 @@ function extractSKUs(block, cfg) {
       const parsed = JSON.parse(skusData);
       if (Array.isArray(parsed)) {
         // Multi-field returns array of strings directly
-        skuList.push(...parsed.filter(Boolean));
+        // Each string might contain comma-separated SKUs, so split them
+        parsed.filter(Boolean).forEach(item => {
+          // Filter out folder paths (they start with / or contain /content/)
+          if (typeof item === 'string' && !item.startsWith('/') && !item.includes('/content/')) {
+            // Split by comma in case multiple SKUs are in one field
+            const skus = item.split(',').map(s => s.trim()).filter(Boolean);
+            skuList.push(...skus);
+          }
+        });
       } else if (typeof parsed === 'string' && parsed) {
-        // Single value
-        skuList.push(parsed);
+        // Single value - split by comma
+        if (!parsed.startsWith('/') && !parsed.includes('/content/')) {
+          const skus = parsed.split(',').map(s => s.trim()).filter(Boolean);
+          skuList.push(...skus);
+        }
       }
     } catch (e) {
       // If not JSON, might be comma-separated string
       if (typeof skusData === 'string' && skusData) {
-        const skus = skusData.split(',').map(s => s.trim()).filter(Boolean);
-        skuList.push(...skus);
+        if (!skusData.startsWith('/') && !skusData.includes('/content/')) {
+          const skus = skusData.split(',').map(s => s.trim()).filter(Boolean);
+          skuList.push(...skus);
+        }
       }
     }
   }
   
   // Fallback: Try to extract from block config (document-based authoring)
-  // Look for rows with SKU values
   if (skuList.length === 0 && cfg) {
     if (cfg.skus) {
       const skusValue = cfg.skus;
       if (Array.isArray(skusValue)) {
-        skuList.push(...skusValue.filter(Boolean));
+        skusValue.filter(Boolean).forEach(item => {
+          if (typeof item === 'string' && !item.startsWith('/') && !item.includes('/content/')) {
+            const skus = item.split(',').map(s => s.trim()).filter(Boolean);
+            skuList.push(...skus);
+          }
+        });
       } else if (typeof skusValue === 'string') {
-        const skus = skusValue.split(',').map(s => s.trim()).filter(Boolean);
-        skuList.push(...skus);
+        if (!skusValue.startsWith('/') && !skusValue.includes('/content/')) {
+          const skus = skusValue.split(',').map(s => s.trim()).filter(Boolean);
+          skuList.push(...skus);
+        }
       }
     }
     
@@ -135,7 +154,7 @@ function extractSKUs(block, cfg) {
     Object.keys(cfg).forEach(key => {
       if (key.toLowerCase().includes('sku') && key !== 'skus') {
         const value = cfg[key];
-        if (value) {
+        if (value && !value.startsWith('/') && !value.includes('/content/')) {
           const skus = value.split(',').map(s => s.trim()).filter(Boolean);
           skuList.push(...skus);
         }
@@ -150,8 +169,13 @@ function extractSKUs(block, cfg) {
       const cells = row.querySelectorAll(':scope > div');
       cells.forEach(cell => {
         const text = cell.textContent.trim();
-        if (text && !text.toLowerCase().includes('folder') && !text.startsWith('http')) {
-          skuList.push(text);
+        // Filter out folder paths and empty values
+        if (text && !text.toLowerCase().includes('folder') && 
+            !text.startsWith('http') && !text.startsWith('/') && 
+            !text.includes('/content/')) {
+          // Split by comma in case multiple SKUs
+          const skus = text.split(',').map(s => s.trim()).filter(Boolean);
+          skuList.push(...skus);
         }
       });
     });
