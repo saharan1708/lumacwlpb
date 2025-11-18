@@ -200,9 +200,13 @@
 }
 .hero.image-top {
   flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
 }
 .hero.image-bottom {
   flex-direction: column-reverse;
+  justify-content: flex-start;
+  align-items: stretch;
 }
 
 /* Image Background Text Left - Text overlaid on background image, left-aligned */
