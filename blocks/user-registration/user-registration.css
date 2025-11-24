@@ -1,22 +1,128 @@
 main .user-registration {
   width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
 }
 
 main .user-registration .user-registration-form {
   --form-columns: 12;
+  --form-button-background-color: #2874F0;
+  --form-button-background-hover-color: #0052cc;
+  --form-input-border-color: #d1d5db;
+  --form-label-color: #374151;
+  --form-label-font-weight: 500;
 }
 
-/* Headings spacing */
-main .user-registration h2 {
-  margin: 0 0 8px;
+/* Input field styling */
+main .user-registration input,
+main .user-registration select {
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-/* Submit wrapper full width on mobile by default (form.css already handles) */
+main .user-registration input:focus,
+main .user-registration select:focus {
+  outline: none;
+  border-color: #2874F0;
+  box-shadow: 0 0 0 3px rgba(40, 116, 240, 0.1);
+}
+
+/* Label styling */
+main .user-registration label {
+  color: #374151;
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Main heading */
+main .user-registration h2:first-child {
+  font-size: 2rem;
+  font-weight: 400;
+  margin: 0 0 32px;
+  color: #212529;
+}
+
+/* Section headings (Communication preferences, LET US KNOW YOU BETTER) */
+main .user-registration h2:not(:first-child) {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 32px 0 16px;
+  color: #212529;
+  text-transform: none;
+}
+
+/* Communication preferences fieldset legend */
+main .user-registration .checkbox-group-wrapper legend {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #212529;
+}
+
+/* Make sure the switch checkboxes for communication prefs display horizontally */
+main .user-registration .checkbox-group-wrapper.horizontal {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+main .user-registration .checkbox-group-wrapper.horizontal legend {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+main .user-registration .checkbox-group-wrapper.horizontal .checkbox-wrapper {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Loyalty program checkbox */
+main .user-registration .checkbox-wrapper[data-id="loyalty"] {
+  margin: 16px 0;
+}
+
+/* Submit button styling */
+main .user-registration .submit-wrapper button {
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 15px 50px;
+  border-radius: 2px;
+  margin-top: 16px;
+}
 
 /* Responsive: stack to single column below 768px */
 @media (width <= 768px) {
+  main .user-registration {
+    padding: 20px 10px;
+  }
+
   main .user-registration .field-wrapper[class*="col-"] {
     grid-column: span 12 !important;
+  }
+
+  main .user-registration h2:first-child {
+    font-size: 1.75rem;
+    margin-bottom: 24px;
+  }
+
+  main .user-registration h2:not(:first-child) {
+    font-size: 1rem;
+    margin: 24px 0 12px;
+  }
+
+  main .user-registration .checkbox-group-wrapper.horizontal {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  main .user-registration .checkbox-group-wrapper.horizontal .checkbox-wrapper {
+    width: 100%;
   }
 }
 
