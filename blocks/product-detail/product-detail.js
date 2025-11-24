@@ -2,6 +2,7 @@ import { createOptimizedPicture, readBlockConfig } from '../../scripts/aem.js';
 import { isAuthorEnvironment } from '../../scripts/scripts.js';
 
 const GQL_BASE = 'https://publish-p168578-e1802821.adobeaemcloud.com/graphql/execute.json/Lumacrosswalk/getProductsByPathAndSKU';
+const GQL_ALL_PRODUCTS = 'https://publish-p168578-e1802821.adobeaemcloud.com/graphql/execute.json/Lumacrosswalk/getProductsbyPath';
 
 /**
  * Get query parameter from URL
@@ -36,6 +37,106 @@ async function fetchProductDetail(path, sku) {
     console.error('Product Detail: fetch error', e);
     return null;
   }
+}
+
+/**
+ * Fetch all products from a folder
+ * @param {string} path - Content fragment folder path
+ * @returns {Promise<Array>} - Array of products
+ */
+async function fetchAllProducts(path) {
+  try {
+    if (!path) return [];
+    const url = `${GQL_ALL_PRODUCTS};_path=${path}`;
+    const resp = await fetch(url, { method: 'GET' });
+    const json = await resp.json();
+    const items = json?.data?.productsModelList?.items || [];
+    return items.filter(item => item && item.sku);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Product Detail: fetch all products error', e);
+    return [];
+  }
+}
+
+/**
+ * Build a recommendation card (similar to new-arrival.js)
+ * @param {Object} item - Product data
+ * @param {boolean} isAuthor - Is author environment
+ * @returns {HTMLElement} - Product card
+ */
+function buildRecommendationCard(item, isAuthor) {
+  const { id, sku, name, image = {}, category = [] } = item || {};
+  let imgUrl = isAuthor ? image?._authorUrl : image?._publishUrl;
+  const productId = sku || id || '';
+
+  const card = document.createElement('article');
+  card.className = 'pd-rec-card';
+
+  // Make card clickable and redirect to product page
+  if (productId) {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => {
+      const currentPath = window.location.pathname;
+      
+      // Smart path construction: ensure we navigate to the correct product page
+      let basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+      
+      // If the current page doesn't have a language segment, try to add it
+      const langPattern = /\/(en|fr|de|es|it|ja|zh|pt|nl|sv|da|no|fi)$/;
+      if (!langPattern.test(basePath) && !basePath.includes('/en/')) {
+        const pathMatch = currentPath.match(/\/(en|fr|de|es|it|ja|zh|pt|nl|sv|da|no|fi)\//);
+        if (pathMatch) {
+          const langCode = pathMatch[1];
+          const langIndex = currentPath.indexOf(`/${langCode}/`);
+          basePath = currentPath.substring(0, langIndex + langCode.length + 1);
+        } else {
+          basePath = `${basePath}/en`;
+        }
+      }
+      
+      // On author add .html extension, on publish don't
+      const productPath = isAuthor ? `${basePath}/product.html` : `${basePath}/product`;
+      window.location.href = `${productPath}?productId=${encodeURIComponent(productId)}`;
+    });
+  }
+
+  // Handle image display for author vs publish
+  let picture = null;
+  if (imgUrl) {
+    if (!isAuthor && imgUrl.startsWith('http')) {
+      picture = document.createElement('picture');
+      const img = document.createElement('img');
+      img.src = imgUrl;
+      img.alt = name || 'Product image';
+      img.loading = 'lazy';
+      picture.appendChild(img);
+    } else {
+      picture = createOptimizedPicture(imgUrl, name || 'Product image', false, [
+        { media: '(min-width: 900px)', width: '600' },
+        { media: '(min-width: 600px)', width: '400' },
+        { width: '320' },
+      ]);
+    }
+  }
+
+  const imgWrap = document.createElement('div');
+  imgWrap.className = 'pd-rec-card-media';
+  if (picture) imgWrap.append(picture);
+
+  const meta = document.createElement('div');
+  meta.className = 'pd-rec-card-meta';
+  const categoryText = (category && category.length) ? category.join(', ') : '';
+  const cat = document.createElement('p');
+  cat.className = 'pd-rec-card-category';
+  cat.textContent = categoryText.replaceAll('luma:', '').replaceAll('/', ', ');
+  const title = document.createElement('h3');
+  title.className = 'pd-rec-card-title';
+  title.textContent = name || '';
+  meta.append(cat, title);
+
+  card.append(imgWrap, meta);
+  return card;
 }
 
 /**
@@ -147,6 +248,59 @@ function buildProductDetail(product, isAuthor) {
 }
 
 /**
+ * Build "You May Also Like" recommendations section
+ * @param {Object} currentProduct - Current product data
+ * @param {Array} allProducts - All products from the folder
+ * @param {boolean} isAuthor - Is author environment
+ * @returns {HTMLElement|null} - Recommendations section or null
+ */
+function buildRecommendations(currentProduct, allProducts, isAuthor) {
+  const { sku: currentSku, category: currentCategories = [] } = currentProduct;
+  
+  if (!currentCategories || currentCategories.length === 0) {
+    return null;
+  }
+
+  // Filter products by matching category
+  const recommendations = allProducts
+    .filter(product => {
+      // Exclude current product
+      if (product.sku === currentSku) return false;
+      
+      // Check if product has any matching category
+      const productCategories = product.category || [];
+      return productCategories.some(cat => currentCategories.includes(cat));
+    })
+    .slice(0, 5); // Limit to 5 products
+
+  if (recommendations.length === 0) {
+    return null;
+  }
+
+  // Build recommendations section
+  const section = document.createElement('div');
+  section.className = 'pd-recommendations';
+
+  const header = document.createElement('div');
+  header.className = 'pd-rec-header';
+  const title = document.createElement('h2');
+  title.className = 'pd-rec-title';
+  title.textContent = 'You May Also Like';
+  header.append(title);
+
+  const grid = document.createElement('div');
+  grid.className = 'pd-rec-grid';
+
+  recommendations.forEach(product => {
+    const card = buildRecommendationCard(product, isAuthor);
+    grid.append(card);
+  });
+
+  section.append(header, grid);
+  return section;
+}
+
+/**
  * Decorate the product detail block
  * @param {HTMLElement} block - The block element
  */
@@ -196,8 +350,11 @@ export default async function decorate(block) {
   loader.textContent = 'Loading product details...';
   block.appendChild(loader);
 
-  // Fetch and display product
-  const product = await fetchProductDetail(folderHref, sku);
+  // Fetch product and all products in parallel
+  const [product, allProducts] = await Promise.all([
+    fetchProductDetail(folderHref, sku),
+    fetchAllProducts(folderHref),
+  ]);
 
   block.textContent = '';
 
@@ -209,7 +366,14 @@ export default async function decorate(block) {
     return;
   }
 
+  // Display product detail
   const productDetail = buildProductDetail(product, isAuthor);
   block.appendChild(productDetail);
+
+  // Display recommendations
+  const recommendations = buildRecommendations(product, allProducts, isAuthor);
+  if (recommendations) {
+    block.appendChild(recommendations);
+  }
 }
 
