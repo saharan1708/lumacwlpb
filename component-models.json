@@ -6554,5 +6554,9 @@
         "multi": true
       }
     ]
+  },
+  {
+    "id": "sign-in",
+    "fields": []
   }
 ]
