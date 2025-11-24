@@ -10,11 +10,9 @@ main .user-registration {
   background: #fff;
 }
 
-/* Ensure form element uses grid */
+/* Ensure form element uses grid - form itself doesn't need grid, the fieldset does */
 main .user-registration form {
-  display: grid !important;
-  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
-  gap: 24px !important;
+  display: block;
 }
 
 main .user-registration .user-registration-form {
@@ -29,45 +27,50 @@ main .user-registration .user-registration-form {
   --form-field-horz-gap: 24px;
 }
 
-/* Ensure panel uses grid layout */
+/* Ensure panel (fieldset) uses grid layout */
 main .user-registration .panel-wrapper {
   display: grid !important;
   grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
   gap: 24px !important;
+  padding: 0 !important;
+  border: none !important;
+  margin: 0 !important;
 }
 
-/* Ensure headings inside panel take full width */
-main .user-registration .panel-wrapper > h2,
-main .user-registration .panel-wrapper > .field-wrapper:has(h2) {
+/* Hide the label in heading wrappers (form creates both label and h2) */
+main .user-registration .heading-wrapper label {
+  display: none !important;
+}
+
+/* Heading wrapper should take full width and have no extra margin */
+main .user-registration .heading-wrapper {
   grid-column: span 12 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* Main heading - "Create an account" */
-main .user-registration form > h2:first-child,
-main .user-registration .field-wrapper h2:first-of-type {
+main .user-registration h2#heading-create-account {
   font-size: 2.25rem;
   font-weight: 400;
   margin: 0 0 40px;
   padding: 0;
   color: #1e293b;
   line-height: 1.2;
-  grid-column: span 12 !important;
-}
-
-/* Remove duplicate heading text that appears outside h2 */
-main .user-registration .field-wrapper:has(h2) {
-  padding: 0;
-  margin: 0;
 }
 
 /* Section headings - "LET US KNOW YOU BETTER" */
-main .user-registration h2:not(:first-of-type) {
+main .user-registration h2#heading-better {
   font-size: 1.25rem;
   font-weight: 600;
-  margin: 40px 0 24px;
+  margin: 40px 0 0;
   padding: 0;
   color: #1e293b;
   letter-spacing: 0.05em;
+}
+
+/* Ensure heading wrappers in fieldset also span full width */
+main .user-registration .panel-wrapper > .heading-wrapper {
   grid-column: span 12 !important;
 }
 
@@ -170,21 +173,23 @@ main .user-registration .checkbox-group-wrapper {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: #f8fafc;
-  margin: 8px 0 0;
+  margin: 16px 0;
+  grid-column: span 12 !important;
 }
 
 main .user-registration .checkbox-group-wrapper legend {
   font-size: 1rem;
   font-weight: 600;
   color: #1e293b;
-  padding: 0 8px 0 0;
-  margin-bottom: 16px;
-  float: none;
-  width: auto;
+  padding: 0 !important;
+  margin: 0 0 16px !important;
+  float: none !important;
+  width: 100% !important;
+  border: none !important;
 }
 
 main .user-registration .checkbox-group-wrapper.horizontal {
-  display: flex;
+  display: flex !important;
   flex-wrap: wrap;
   gap: 32px;
 }
@@ -197,13 +202,10 @@ main .user-registration .checkbox-group-wrapper.horizontal legend {
 main .user-registration .checkbox-group-wrapper.horizontal .checkbox-wrapper {
   flex: 0 1 auto;
   min-width: 100px;
-  padding: 0;
-}
-
-main .user-registration .checkbox-group-wrapper .checkbox-wrapper {
-  background: transparent;
-  border: none;
-  padding: 0;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
 }
 
 main .user-registration .checkbox-group-wrapper .checkbox-wrapper label {
@@ -266,19 +268,19 @@ main .user-registration select {
     padding: 40px 20px;
   }
 
-  main .user-registration .field-wrapper[class*="col-"] {
+  /* Stack all fields to single column on mobile */
+  main .user-registration .panel-wrapper > .field-wrapper[class*="col-"] {
     grid-column: span 12 !important;
   }
 
-  main .user-registration form > h2:first-child,
-  main .user-registration .field-wrapper h2:first-of-type {
+  main .user-registration h2#heading-create-account {
     font-size: 1.875rem;
     margin-bottom: 32px;
   }
 
-  main .user-registration h2:not(:first-of-type) {
+  main .user-registration h2#heading-better {
     font-size: 1.125rem;
-    margin: 32px 0 20px;
+    margin: 32px 0 0;
   }
 
   main .user-registration .checkbox-group-wrapper.horizontal {
@@ -297,8 +299,7 @@ main .user-registration select {
     padding: 30px 16px;
   }
 
-  main .user-registration form > h2:first-child,
-  main .user-registration .field-wrapper h2:first-of-type {
+  main .user-registration h2#heading-create-account {
     font-size: 1.75rem;
     margin-bottom: 28px;
   }
