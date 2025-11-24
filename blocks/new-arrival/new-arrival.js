@@ -1,7 +1,7 @@
 import { readBlockConfig, createOptimizedPicture } from '../../scripts/aem.js';
 import { isAuthorEnvironment } from '../../scripts/scripts.js';
 
-const GQL_BASE = 'https://publish-p168578-e1802821.adobeaemcloud.com/graphql/execute.json/Lumacrosswalk/menproductspagelister';
+const GQL_BASE = 'https://publish-p168578-e1802821.adobeaemcloud.com/graphql/execute.json/luma3/menproductspagelister';
 
 function buildCard(item, isAuthor) {
   const { id, sku, name, image = {}, category = [] } = item || {};
