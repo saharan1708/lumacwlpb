@@ -78,18 +78,6 @@ function addCreateAccountLink(block, isAuthor) {
     const linkSection = document.createElement('div');
     linkSection.className = 'sign-in-links';
 
-    // Forgot password link
-    const forgotPassword = document.createElement('a');
-    forgotPassword.href = '#';
-    forgotPassword.className = 'forgot-password-link';
-    forgotPassword.textContent = 'Forgot your password?';
-    forgotPassword.addEventListener('click', (e) => {
-      e.preventDefault();
-      // eslint-disable-next-line no-console
-      console.log('Forgot password clicked');
-      // TODO: Implement forgot password functionality
-    });
-
     // Divider
     const divider = document.createElement('div');
     divider.className = 'sign-in-divider';
@@ -114,7 +102,7 @@ function addCreateAccountLink(block, isAuthor) {
     
     createAccountLink.href = registrationPath;
 
-    linkSection.append(forgotPassword, divider, createAccountLink);
+    linkSection.append(divider, createAccountLink);
     formElement.parentElement.append(linkSection);
   }, 100);
 }

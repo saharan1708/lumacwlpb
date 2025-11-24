@@ -155,25 +155,10 @@ main .sign-in .sign-in-links {
   text-align: center;
 }
 
-main .sign-in .forgot-password-link {
-  display: inline-block;
-  color: #2874F0;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  margin-bottom: 24px;
-}
-
-main .sign-in .forgot-password-link:hover {
-  color: #0052cc;
-  text-decoration: underline;
-}
-
 /* Divider */
 main .sign-in .sign-in-divider {
   position: relative;
-  margin: 32px 0;
+  margin: 32px 0 24px;
   text-align: center;
 }
 
@@ -248,7 +233,7 @@ main .sign-in .create-account-link:active {
   }
 
   main .sign-in .sign-in-divider {
-    margin: 24px 0;
+    margin: 24px 0 20px;
   }
 }
 
