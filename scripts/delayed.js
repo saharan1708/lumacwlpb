@@ -199,6 +199,9 @@ function buildCustomDataLayer() {
         return;
       }
 
+      // Set updating flag
+      window._dataLayerUpdating = true;
+
       if (merge) {
         // Deep merge the updates with existing dataLayer
         _dataLayer = deepMerge(_dataLayer, updates);
@@ -210,6 +213,9 @@ function buildCustomDataLayer() {
       // Persist to sessionStorage
       sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(_dataLayer));
       console.log("DataLayer updated:", _dataLayer);
+
+      // Clear updating flag
+      window._dataLayerUpdating = false;
 
       // Dispatch event to notify other components
       dispatchDataLayerEvent("updated");
@@ -302,88 +308,179 @@ function isObject(item) {
   return item && typeof item === "object" && !Array.isArray(item);
 }
 /**
- * Fetches and processes custom events configuration
- * Executes custom events based on page matching logic with exclusions
+ * Fetches and caches custom events configuration (loads once per session)
+ * @returns {Promise<Object|null>} Custom events configuration
  */
-async function loadCustomEvents() {
-  buildCustomDataLayer();
+async function loadCustomEventsConfig() {
+  const EVENTS_STORAGE_KEY = "luma_customEventsConfig";
+
   try {
-    // Fetch the custom-events.json file
+    // Try to get cached configuration from sessionStorage
+    const cachedConfig = sessionStorage.getItem(EVENTS_STORAGE_KEY);
+
+    if (cachedConfig) {
+      console.log("Custom events config loaded from session cache");
+      return JSON.parse(cachedConfig);
+    }
+
+    // Fetch the custom-events.json file if not cached
+    console.log("Fetching custom events config from server...");
     const response = await fetch("/custom-events.json");
+
     if (!response.ok) {
       console.warn("Custom events configuration not found");
-      return;
+      return null;
     }
 
     const config = await response.json();
-    const currentPath = window.location.pathname;
 
-    // Process each event configuration in the data array
-    if (config.data && Array.isArray(config.data)) {
-      config.data.forEach((eventConfig) => {
-        const { page, excludes, event } = eventConfig;
+    // Cache the configuration in sessionStorage
+    sessionStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(config));
+    console.log("Custom events config cached for session");
 
-        // Skip if event name is not defined
-        if (!event) return;
-
-        // Check if current page matches the exclusion list
-        if (excludes) {
-          const excludeList = excludes.split(",").map((path) => path.trim());
-          const isExcluded = excludeList.some((excludePath) => {
-            // Exact match or regex pattern match
-            if (excludePath === currentPath) return true;
-            // Check if exclude path is a regex pattern
-            if (excludePath.includes("*")) {
-              const regexPattern = excludePath
-                .replace(/\*/g, ".*")
-                .replace(/\//g, "\\/");
-              const regex = new RegExp(`^${regexPattern}$`);
-              return regex.test(currentPath);
-            }
-            return false;
-          });
-
-          if (isExcluded) {
-            console.log(`Page ${currentPath} is excluded from event: ${event}`);
-            return;
-          }
-        }
-
-        // Check if current page matches the page pattern
-        let shouldExecute = false;
-
-        if (page === "*") {
-          // Match all pages
-          shouldExecute = true;
-        } else if (page === currentPath) {
-          // Exact match
-          shouldExecute = true;
-        } else if (page.includes("*")) {
-          // Wildcard/regex pattern match
-          const regexPattern = page.replace(/\*/g, ".*").replace(/\//g, "\\/");
-          const regex = new RegExp(`^${regexPattern}$`);
-          shouldExecute = regex.test(currentPath);
-        }
-
-        // Execute the custom event if conditions match
-        if (shouldExecute) {
-          console.log(
-            `Executing custom event: ${event} for page: ${currentPath}`
-          );
-
-          // Dispatch custom event
-          const customEvent = new CustomEvent(event, {
-            bubbles: true,
-          });
-          console.log("Dispatching custom event:", customEvent);
-          document.dispatchEvent(customEvent);
-        }
-      });
-    }
+    return config;
   } catch (error) {
-    console.error("Error loading custom events:", error);
+    console.error("Error loading custom events config:", error);
+    return null;
   }
 }
+
+/**
+ * Triggers custom events based on current page and configuration
+ * Only executes when dataLayer is ready and stable
+ * @param {Object} config - Custom events configuration
+ * @param {string} currentPath - Optional current path (defaults to window.location.pathname)
+ */
+function triggerCustomEvents(config = null, currentPath = null) {
+  // Wait for dataLayer to be ready and stable
+  if (!window.dataLayer) {
+    console.warn("DataLayer not ready yet, waiting...");
+    // Retry after a short delay
+    setTimeout(() => triggerCustomEvents(config, currentPath), 100);
+    return;
+  }
+
+  // Check if dataLayer is being updated
+  if (window._dataLayerUpdating) {
+    console.log("DataLayer is being updated, deferring custom events...");
+    // Wait for update to complete
+    document.addEventListener(
+      "dataLayerUpdated",
+      () => {
+        triggerCustomEvents(config, currentPath);
+      },
+      { once: true }
+    );
+    return;
+  }
+
+  // Get or use provided configuration
+  if (!config) {
+    const cachedConfig = sessionStorage.getItem("luma_customEventsConfig");
+    if (!cachedConfig) {
+      console.warn("No custom events configuration available");
+      return;
+    }
+    config = JSON.parse(cachedConfig);
+  }
+
+  const pagePath = currentPath || window.location.pathname;
+
+  // Process each event configuration in the data array
+  if (config.data && Array.isArray(config.data)) {
+    config.data.forEach((eventConfig) => {
+      const { page, excludes, event } = eventConfig;
+
+      // Skip if event name is not defined
+      if (!event) return;
+
+      // Check if current page matches the exclusion list
+      if (excludes) {
+        const excludeList = excludes.split(",").map((path) => path.trim());
+        const isExcluded = excludeList.some((excludePath) => {
+          // Exact match or regex pattern match
+          if (excludePath === pagePath) return true;
+          // Check if exclude path is a regex pattern
+          if (excludePath.includes("*")) {
+            const regexPattern = excludePath
+              .replace(/\*/g, ".*")
+              .replace(/\//g, "\\/");
+            const regex = new RegExp(`^${regexPattern}$`);
+            return regex.test(pagePath);
+          }
+          return false;
+        });
+
+        if (isExcluded) {
+          console.log(`Page ${pagePath} is excluded from event: ${event}`);
+          return;
+        }
+      }
+
+      // Check if current page matches the page pattern
+      let shouldExecute = false;
+
+      if (page === "*") {
+        // Match all pages
+        shouldExecute = true;
+      } else if (page === pagePath) {
+        // Exact match
+        shouldExecute = true;
+      } else if (page.includes("*")) {
+        // Wildcard/regex pattern match
+        const regexPattern = page.replace(/\*/g, ".*").replace(/\//g, "\\/");
+        const regex = new RegExp(`^${regexPattern}$`);
+        shouldExecute = regex.test(pagePath);
+      }
+
+      // Execute the custom event if conditions match
+      if (shouldExecute) {
+        console.log(`Executing custom event: ${event} for page: ${pagePath}`);
+
+        // Dispatch custom event with dataLayer context
+        const customEvent = new CustomEvent(event, {
+          bubbles: true,
+        });
+        console.log("Dispatching custom event:", customEvent);
+        document.dispatchEvent(customEvent);
+      }
+    });
+  }
+}
+
+/**
+ * Initializes custom events system
+ * Loads configuration once and triggers events for current page
+ */
+async function initializeCustomEvents() {
+  buildCustomDataLayer();
+
+  try {
+    // Load custom events configuration (from cache or server)
+    const config = await loadCustomEventsConfig();
+
+    if (!config) {
+      console.warn("Could not initialize custom events");
+      return;
+    }
+
+    // Wait for dataLayer to be ready before triggering events
+    const checkDataLayerReady = () => {
+      if (window.dataLayer) {
+        triggerCustomEvents(config);
+      } else {
+        setTimeout(checkDataLayerReady, 50);
+      }
+    };
+
+    checkDataLayerReady();
+  } catch (error) {
+    console.error("Error initializing custom events:", error);
+  }
+}
+
+// Make triggerCustomEvents globally accessible
+window.triggerCustomEvents = triggerCustomEvents;
 
 if (!window.location.hostname.includes("localhost")) {
   embedCustomLibraries();
@@ -392,5 +489,5 @@ if (!window.location.hostname.includes("localhost")) {
   }
 }
 
-// Load custom events
-loadCustomEvents();
+// Initialize custom events system
+initializeCustomEvents();
