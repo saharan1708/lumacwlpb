@@ -26,9 +26,9 @@ async function fetchProductDetail(path, sku, isAuthor) {
       return null;
     }
     const baseUrl = isAuthor 
-      ? 'https://author-p168578-e1802821.adobeaemcloud.com' 
-      : 'https://publish-p168578-e1802821.adobeaemcloud.com';
-    const url = `${baseUrl}/graphql/execute.json/luma3/getProductsByPathAndSKU;_path=${path};sku=${sku}`;
+      ? 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGrapghQlByPathAndSku' 
+      : 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGrapghQlByPathAndSku';
+    const url = `${baseUrl}/graphql/execute.json/luma3/getProductsByPathAndSKU?_path=${path}&sku=${sku}`;
     const resp = await fetch(url, { method: 'GET' });
     const json = await resp.json();
     const items = json?.data?.productsModelList?.items || [];
@@ -55,9 +55,9 @@ async function fetchAllProducts(path, isAuthor) {
     }
     const baseUrl = isAuthor 
       ? 'https://author-p168578-e1802821.adobeaemcloud.com' 
-      : 'https://publish-p168578-e1802821.adobeaemcloud.com';
+      : 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGraphQl';
     // Use the same query as category-products-lister which we know works
-    const url = `${baseUrl}/graphql/execute.json/luma3/menproductspagelister;_path=${path}`;
+    const url = `${baseUrl}/graphql/execute.json/luma3/menproductspagelister?_path=${path}`;
     // eslint-disable-next-line no-console
     console.log('You May Also Like: Fetching from URL:', url);
     const resp = await fetch(url, { method: 'GET' });
