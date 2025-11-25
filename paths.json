@@ -13,10 +13,8 @@
     "/content/luma3/configuration:/.helix/config.json",
     "/content/luma3/metadata:/metadata.json",
     "/content/luma3/redirects:/redirects.json",
-    "/content/luma3/placeholders:/placeholders.json"
+    "/content/luma3/placeholders:/placeholders.json",
+    "/content/luma3/custom-events:/custom-events.json"
   ],
-  "includes": [
-    "/content/luma3/",
-    "/content/dam/luma3/"
-  ]
+  "includes": ["/content/luma3/", "/content/dam/luma3/"]
 }
