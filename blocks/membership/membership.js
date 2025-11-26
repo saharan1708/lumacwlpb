@@ -1,20 +1,6 @@
 export default async function decorate(block) {
-  // Parse block content for authorable title
-  const rows = Array.from(block.children);
-  let title = 'BECOME A MEMBER';
-
-  // Parse title from block content
-  rows.forEach((row) => {
-    const cols = Array.from(row.children);
-    if (cols.length >= 2) {
-      const key = cols[0].textContent.trim().toLowerCase();
-      const value = cols[1].textContent.trim();
-      
-      if (key === 'title') {
-        title = value;
-      }
-    }
-  });
+  // Read title from the first child div (authorable field from Universal Editor)
+  const title = block.querySelector(':scope > div:nth-child(1) > div')?.textContent?.trim() || 'BECOME A MEMBER';
 
   // Build Adaptive Form definition for Membership
   const formDef = {
