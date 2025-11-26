@@ -147,11 +147,21 @@ function buildCustomDataLayer() {
           Seasonality: "Fall",
         },
       };
-
-      // Save initial dataLayer to sessionStorage
-      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(_dataLayer));
-      console.log("DataLayer initialized:", _dataLayer);
     }
+
+    // Update page information from current document
+    if (!_dataLayer.page) {
+      _dataLayer.page = {};
+    }
+    _dataLayer.page.title = document.title;
+    _dataLayer.page.name = document.title.toLowerCase();
+
+    // Save updated dataLayer to sessionStorage
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(_dataLayer));
+    console.log("DataLayer page info updated:", {
+      title: _dataLayer.page.title,
+      name: _dataLayer.page.name,
+    });
 
     // Helper function to dispatch dataLayer event
     const dispatchDataLayerEvent = (eventType = "initialized") => {
