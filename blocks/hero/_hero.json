@@ -129,5 +129,10 @@
       ]
     }
   ],
-  "filters": []
+  "filters": [
+    {
+      "id": "hero",
+      "components": []
+    }
+  ]
 }
