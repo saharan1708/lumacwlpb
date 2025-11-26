@@ -21,6 +21,21 @@ main .membership::after {
   pointer-events: none;
 }
 
+/* Membership Title */
+main .membership .membership-title {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto 40px;
+  padding: 0 40px;
+  font-size: 42px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
 main .membership form {
   position: relative;
   z-index: 1;
@@ -30,24 +45,6 @@ main .membership form {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* Membership Heading */
-main .membership .membership-heading {
-  grid-column: 1 / -1;
-  margin-bottom: 10px;
-}
-
-main .membership .membership-heading h1,
-main .membership .membership-heading h2,
-main .membership .membership-heading h3 {
-  font-size: 42px;
-  font-weight: 700;
-  margin: 0;
-  color: #1a1a1a;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-  text-transform: uppercase;
 }
 
 /* Form Panel Layout - inherit from form component */
@@ -145,15 +142,14 @@ main .membership button[type="submit"]:active {
     padding: 40px 16px;
   }
 
-  main .membership form {
-    padding: 30px 20px;
+  main .membership .membership-title {
+    font-size: 32px;
+    padding: 0 20px;
+    margin-bottom: 30px;
   }
 
-  main .membership .membership-heading h1,
-  main .membership .membership-heading h2,
-  main .membership .membership-heading h3 {
-    font-size: 32px;
-    margin-bottom: 30px;
+  main .membership form {
+    padding: 30px 20px;
   }
 
   main .membership.form form .membership-panel.panel-wrapper {
@@ -178,10 +174,9 @@ main .membership button[type="submit"]:active {
 }
 
 @media (max-width: 480px) {
-  main .membership .membership-heading h1,
-  main .membership .membership-heading h2,
-  main .membership .membership-heading h3 {
+  main .membership .membership-title {
     font-size: 26px;
+    padding: 0 16px;
   }
 
   main .membership form {

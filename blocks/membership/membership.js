@@ -23,12 +23,6 @@ export default async function decorate(block) {
     appliedCssClassNames: 'membership-form',
     items: [
       {
-        id: 'heading-membership',
-        fieldType: 'heading',
-        label: { value: title },
-        appliedCssClassNames: 'membership-heading col-12',
-      },
-      {
         id: 'panel-main',
         name: 'main',
         fieldType: 'panel',
@@ -88,7 +82,14 @@ export default async function decorate(block) {
   code.textContent = JSON.stringify(formDef);
   pre.append(code);
   formContainer.append(pre);
-  block.replaceChildren(formContainer);
+  
+  // Create title element outside the form
+  const titleElement = document.createElement('h2');
+  titleElement.className = 'membership-title';
+  titleElement.textContent = title;
+  
+  // Add title before form
+  block.replaceChildren(titleElement, formContainer);
 
   const formModule = await import('../form/form.js');
   await formModule.default(formContainer);
