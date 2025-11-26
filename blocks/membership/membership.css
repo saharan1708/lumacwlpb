@@ -33,26 +33,41 @@ main .membership form {
 }
 
 /* Membership Heading */
+main .membership .membership-heading {
+  grid-column: 1 / -1;
+  margin-bottom: 10px;
+}
+
 main .membership .membership-heading h1,
 main .membership .membership-heading h2,
 main .membership .membership-heading h3 {
   font-size: 42px;
   font-weight: 700;
-  margin: 0 0 40px;
+  margin: 0;
   color: #1a1a1a;
   letter-spacing: -0.5px;
   line-height: 1.2;
+  text-transform: uppercase;
 }
 
-/* Form Panel Layout */
-main .membership .membership-panel {
+/* Form Panel Layout - inherit from form component */
+main .membership.form form .membership-panel.panel-wrapper {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 30px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 30px 30px;
 }
 
-main .membership .field-wrapper {
+main .membership.form form .field-wrapper {
   margin: 0;
+}
+
+/* Grid Column Spans */
+main .membership.form form .field-wrapper.col-6 {
+  grid-column: span 6;
+}
+
+main .membership.form form .field-wrapper.col-12 {
+  grid-column: span 12;
 }
 
 /* Input Fields */
@@ -141,8 +156,12 @@ main .membership button[type="submit"]:active {
     margin-bottom: 30px;
   }
 
-  main .membership .membership-panel {
-    gap: 20px;
+  main .membership.form form .membership-panel.panel-wrapper {
+    gap: 20px 20px;
+  }
+
+  main .membership.form form .field-wrapper.col-6 {
+    grid-column: span 12;
   }
 
   main .membership button[type="submit"] {
