@@ -1,5 +1,5 @@
-import { createOptimizedPicture, readBlockConfig } from '../../scripts/aem.js';
-import { isAuthorEnvironment } from '../../scripts/scripts.js';
+import { createOptimizedPicture, readBlockConfig } from "../../scripts/aem.js";
+import { isAuthorEnvironment } from "../../scripts/scripts.js";
 
 /**
  * Get query parameter from URL
@@ -22,20 +22,20 @@ async function fetchProductDetail(path, sku, isAuthor) {
   try {
     if (!path || !sku) {
       // eslint-disable-next-line no-console
-      console.error('Product Detail: Missing path or SKU');
+      console.error("Product Detail: Missing path or SKU");
       return null;
     }
-    const baseUrl = isAuthor 
-      ? 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGrapghQlByPathAndSku' 
-      : 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGrapghQlByPathAndSku';
+    const baseUrl = isAuthor
+      ? "https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGrapghQlByPathAndSku"
+      : "https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGrapghQlByPathAndSku";
     const url = `${baseUrl}/graphql/execute.json/luma3/getProductsByPathAndSKU?_path=${path}&sku=${sku}`;
-    const resp = await fetch(url, { method: 'GET' });
+    const resp = await fetch(url, { method: "GET" });
     const json = await resp.json();
     const items = json?.data?.productsModelList?.items || [];
     return items.length > 0 ? items[0] : null;
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.error('Product Detail: fetch error', e);
+    console.error("Product Detail: fetch error", e);
     return null;
   }
 }
@@ -50,28 +50,28 @@ async function fetchAllProducts(path, isAuthor) {
   try {
     if (!path) {
       // eslint-disable-next-line no-console
-      console.log('You May Also Like: No path provided');
+      console.log("You May Also Like: No path provided");
       return [];
     }
-    const baseUrl = isAuthor 
-      ? 'https://author-p168578-e1802821.adobeaemcloud.com' 
-      : 'https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGraphQl';
+    const baseUrl = isAuthor
+      ? "https://author-p168578-e1802821.adobeaemcloud.com"
+      : "https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGraphQl";
     // Use the same query as category-products-lister which we know works
     const url = `${baseUrl}/graphql/execute.json/luma3/menproductspagelister?_path=${path}`;
     // eslint-disable-next-line no-console
-    console.log('You May Also Like: Fetching from URL:', url);
-    const resp = await fetch(url, { method: 'GET' });
+    console.log("You May Also Like: Fetching from URL:", url);
+    const resp = await fetch(url, { method: "GET" });
     const json = await resp.json();
     // eslint-disable-next-line no-console
-    console.log('You May Also Like: GraphQL response:', json);
+    console.log("You May Also Like: GraphQL response:", json);
     const items = json?.data?.productsModelList?.items || [];
-    const filtered = items.filter(item => item && item.sku);
+    const filtered = items.filter((item) => item && item.sku);
     // eslint-disable-next-line no-console
-    console.log('You May Also Like: All products fetched:', filtered.length);
+    console.log("You May Also Like: All products fetched:", filtered.length);
     return filtered;
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.error('Product Detail: fetch all products error', e);
+    console.error("Product Detail: fetch all products error", e);
     return [];
   }
 }
@@ -85,24 +85,26 @@ async function fetchAllProducts(path, isAuthor) {
 function buildRecommendationCard(item, isAuthor) {
   const { id, sku, name, image = {}, category = [] } = item || {};
   let imgUrl = isAuthor ? image?._authorUrl : image?._publishUrl;
-  const productId = sku || id || '';
+  const productId = sku || id || "";
 
-  const card = document.createElement('article');
-  card.className = 'pd-rec-card';
+  const card = document.createElement("article");
+  card.className = "pd-rec-card";
 
   // Make card clickable and redirect to product page
   if (productId) {
-    card.style.cursor = 'pointer';
-    card.addEventListener('click', () => {
+    card.style.cursor = "pointer";
+    card.addEventListener("click", () => {
       const currentPath = window.location.pathname;
-      
+
       // Smart path construction: ensure we navigate to the correct product page
-      let basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
-      
+      let basePath = currentPath.substring(0, currentPath.lastIndexOf("/"));
+
       // If the current page doesn't have a language segment, try to add it
       const langPattern = /\/(en|fr|de|es|it|ja|zh|pt|nl|sv|da|no|fi)$/;
-      if (!langPattern.test(basePath) && !basePath.includes('/en/')) {
-        const pathMatch = currentPath.match(/\/(en|fr|de|es|it|ja|zh|pt|nl|sv|da|no|fi)\//);
+      if (!langPattern.test(basePath) && !basePath.includes("/en/")) {
+        const pathMatch = currentPath.match(
+          /\/(en|fr|de|es|it|ja|zh|pt|nl|sv|da|no|fi)\//
+        );
         if (pathMatch) {
           const langCode = pathMatch[1];
           const langIndex = currentPath.indexOf(`/${langCode}/`);
@@ -111,45 +113,49 @@ function buildRecommendationCard(item, isAuthor) {
           basePath = `${basePath}/en`;
         }
       }
-      
+
       // On author add .html extension, on publish don't
-      const productPath = isAuthor ? `${basePath}/product.html` : `${basePath}/product`;
-      window.location.href = `${productPath}?productId=${encodeURIComponent(productId)}`;
+      const productPath = isAuthor
+        ? `${basePath}/product.html`
+        : `${basePath}/product`;
+      window.location.href = `${productPath}?productId=${encodeURIComponent(
+        productId
+      )}`;
     });
   }
 
   // Handle image display for author vs publish
   let picture = null;
   if (imgUrl) {
-    if (!isAuthor && imgUrl.startsWith('http')) {
-      picture = document.createElement('picture');
-      const img = document.createElement('img');
+    if (!isAuthor && imgUrl.startsWith("http")) {
+      picture = document.createElement("picture");
+      const img = document.createElement("img");
       img.src = imgUrl;
-      img.alt = name || 'Product image';
-      img.loading = 'lazy';
+      img.alt = name || "Product image";
+      img.loading = "lazy";
       picture.appendChild(img);
     } else {
-      picture = createOptimizedPicture(imgUrl, name || 'Product image', false, [
-        { media: '(min-width: 900px)', width: '600' },
-        { media: '(min-width: 600px)', width: '400' },
-        { width: '320' },
+      picture = createOptimizedPicture(imgUrl, name || "Product image", false, [
+        { media: "(min-width: 900px)", width: "600" },
+        { media: "(min-width: 600px)", width: "400" },
+        { width: "320" },
       ]);
     }
   }
 
-  const imgWrap = document.createElement('div');
-  imgWrap.className = 'pd-rec-card-media';
+  const imgWrap = document.createElement("div");
+  imgWrap.className = "pd-rec-card-media";
   if (picture) imgWrap.append(picture);
 
-  const meta = document.createElement('div');
-  meta.className = 'pd-rec-card-meta';
-  const categoryText = (category && category.length) ? category.join(', ') : '';
-  const cat = document.createElement('p');
-  cat.className = 'pd-rec-card-category';
-  cat.textContent = categoryText.replaceAll('luma:', '').replaceAll('/', ', ');
-  const title = document.createElement('h3');
-  title.className = 'pd-rec-card-title';
-  title.textContent = name || '';
+  const meta = document.createElement("div");
+  meta.className = "pd-rec-card-meta";
+  const categoryText = category && category.length ? category.join(", ") : "";
+  const cat = document.createElement("p");
+  cat.className = "pd-rec-card-category";
+  cat.textContent = categoryText.replaceAll("luma:", "").replaceAll("/", ", ");
+  const title = document.createElement("h3");
+  title.className = "pd-rec-card-title";
+  title.textContent = name || "";
   meta.append(cat, title);
 
   card.append(imgWrap, meta);
@@ -164,96 +170,131 @@ function buildRecommendationCard(item, isAuthor) {
  */
 function buildProductDetail(product, isAuthor) {
   const {
-    name, price, category = [], description = {}, image = {}, sku,
+    name,
+    price,
+    category = [],
+    description = {},
+    image = {},
+    sku,
+    id,
   } = product;
 
-  const container = document.createElement('div');
-  container.className = 'pd-container';
+  // Update dataLayer with product information
+  // If dataLayer is not ready, the update will be queued automatically
+  const imageUrl = isAuthor ? image?._authorUrl : image?._publishUrl;
+
+  window.updateDataLayer({
+    product: {
+      id: id || sku || "",
+      sku: sku || "",
+      name: name || "",
+      price: price || 0,
+      category:
+        category.length > 0
+          ? category
+              .map((cat) => cat.replace(/^luma:/, "").replace(/\//g, " / "))
+              .join(", ")
+          : "",
+      description: description?.html || description?.markdown || "",
+      image: imageUrl || "",
+    },
+  });
+
+  // eslint-disable-next-line no-console
+  console.log("Product data sent to dataLayer (queued if not ready)");
+
+  const container = document.createElement("div");
+  container.className = "pd-container";
 
   // Image section
-  const imageSection = document.createElement('div');
-  imageSection.className = 'pd-image';
+  const imageSection = document.createElement("div");
+  imageSection.className = "pd-image";
 
   const imgUrl = isAuthor ? image?._authorUrl : image?._publishUrl;
   if (imgUrl) {
     let picture = null;
-    if (!isAuthor && imgUrl.startsWith('http')) {
+    if (!isAuthor && imgUrl.startsWith("http")) {
       // For publish with full URL, use it directly
-      picture = document.createElement('picture');
-      const img = document.createElement('img');
+      picture = document.createElement("picture");
+      const img = document.createElement("img");
       img.src = imgUrl;
-      img.alt = name || 'Product image';
-      img.loading = 'eager';
+      img.alt = name || "Product image";
+      img.loading = "eager";
       picture.appendChild(img);
     } else {
       // For author or relative paths, use createOptimizedPicture
-      picture = createOptimizedPicture(imgUrl, name || 'Product image', true, [
-        { media: '(min-width: 900px)', width: '800' },
-        { media: '(min-width: 600px)', width: '600' },
-        { width: '400' },
+      picture = createOptimizedPicture(imgUrl, name || "Product image", true, [
+        { media: "(min-width: 900px)", width: "800" },
+        { media: "(min-width: 600px)", width: "600" },
+        { width: "400" },
       ]);
     }
     if (picture) imageSection.appendChild(picture);
   }
 
   // Content section
-  const contentSection = document.createElement('div');
-  contentSection.className = 'pd-content';
+  const contentSection = document.createElement("div");
+  contentSection.className = "pd-content";
 
   // Category
   if (category && category.length > 0) {
     const categoryText = category
-      .map((cat) => cat.replace(/^luma:/, '').replace(/\//g, ' / ').toUpperCase())
-      .join(', ');
-    const categoryEl = document.createElement('p');
-    categoryEl.className = 'pd-category';
+      .map((cat) =>
+        cat
+          .replace(/^luma:/, "")
+          .replace(/\//g, " / ")
+          .toUpperCase()
+      )
+      .join(", ");
+    const categoryEl = document.createElement("p");
+    categoryEl.className = "pd-category";
     categoryEl.textContent = categoryText;
     contentSection.appendChild(categoryEl);
   }
 
   // Name
-  const nameEl = document.createElement('h1');
-  nameEl.className = 'pd-name';
-  nameEl.textContent = name || '';
+  const nameEl = document.createElement("h1");
+  nameEl.className = "pd-name";
+  nameEl.textContent = name || "";
   contentSection.appendChild(nameEl);
 
   // Price
   if (price) {
-    const priceEl = document.createElement('p');
-    priceEl.className = 'pd-price';
+    const priceEl = document.createElement("p");
+    priceEl.className = "pd-price";
     priceEl.textContent = `$${price}`;
     contentSection.appendChild(priceEl);
   }
 
   // Description (using HTML format)
   if (description?.html) {
-    const descEl = document.createElement('div');
-    descEl.className = 'pd-description';
+    const descEl = document.createElement("div");
+    descEl.className = "pd-description";
     descEl.innerHTML = description.html;
     contentSection.appendChild(descEl);
   }
 
   // Action buttons
-  const actionsEl = document.createElement('div');
-  actionsEl.className = 'pd-actions';
+  const actionsEl = document.createElement("div");
+  actionsEl.className = "pd-actions";
 
-  const addToCartBtn = document.createElement('button');
-  addToCartBtn.className = 'pd-btn pd-btn-primary';
-  addToCartBtn.textContent = 'Add to Cart';
-  addToCartBtn.setAttribute('aria-label', `Add ${name} to cart`);
-  addToCartBtn.addEventListener('click', () => {
+  const addToCartBtn = document.createElement("button");
+  addToCartBtn.className = "pd-btn pd-btn-primary";
+  addToCartBtn.textContent = "Add to Cart";
+  addToCartBtn.setAttribute("aria-label", `Add ${name} to cart`);
+  addToCartBtn.addEventListener("click", () => {
     // eslint-disable-next-line no-console
-    console.log('Add to cart:', sku);
+    console.log("Add to cart:", sku);
     // TODO: Implement cart functionality
   });
 
-  const addToWishlistBtn = document.createElement('button');
-  addToWishlistBtn.className = 'pd-btn pd-btn-secondary';
-  addToWishlistBtn.textContent = 'Add to Wishlist';
-  addToWishlistBtn.setAttribute('aria-label', `Add ${name} to wishlist`);
-  addToWishlistBtn.addEventListener('click', () => {
+  const addToWishlistBtn = document.createElement("button");
+  addToWishlistBtn.className = "pd-btn pd-btn-secondary";
+  addToWishlistBtn.textContent = "Add to Wishlist";
+  addToWishlistBtn.setAttribute("aria-label", `Add ${name} to wishlist`);
+  addToWishlistBtn.addEventListener("click", () => {
     // eslint-disable-next-line no-console
-    console.log('Add to wishlist:', sku);
+    console.log("Add to wishlist:", sku);
     // TODO: Implement wishlist functionality
   });
 
@@ -273,66 +314,78 @@ function buildProductDetail(product, isAuthor) {
  */
 function buildRecommendations(currentProduct, allProducts, isAuthor) {
   const { sku: currentSku, category: currentCategories = [] } = currentProduct;
-  
+
   // eslint-disable-next-line no-console
-  console.log('You May Also Like: Current product SKU:', currentSku);
+  console.log("You May Also Like: Current product SKU:", currentSku);
   // eslint-disable-next-line no-console
-  console.log('You May Also Like: Current product categories:', currentCategories);
+  console.log(
+    "You May Also Like: Current product categories:",
+    currentCategories
+  );
   // eslint-disable-next-line no-console
-  console.log('You May Also Like: Total products available:', allProducts.length);
-  
+  console.log(
+    "You May Also Like: Total products available:",
+    allProducts.length
+  );
+
   if (!currentCategories || currentCategories.length === 0) {
     // eslint-disable-next-line no-console
-    console.log('You May Also Like: No categories found for current product');
+    console.log("You May Also Like: No categories found for current product");
     return null;
   }
 
   // Filter products by matching category
   const recommendations = allProducts
-    .filter(product => {
+    .filter((product) => {
       // Exclude current product
       if (product.sku === currentSku) return false;
-      
+
       // Check if product has any matching category
       const productCategories = product.category || [];
-      return productCategories.some(cat => currentCategories.includes(cat));
+      return productCategories.some((cat) => currentCategories.includes(cat));
     })
     .slice(0, 5); // Limit to 5 products
 
   // eslint-disable-next-line no-console
-  console.log('You May Also Like: Filtered recommendations:', recommendations.length);
+  console.log(
+    "You May Also Like: Filtered recommendations:",
+    recommendations.length
+  );
   // eslint-disable-next-line no-console
-  console.log('You May Also Like: Recommended products:', recommendations.map(p => ({ sku: p.sku, category: p.category })));
+  console.log(
+    "You May Also Like: Recommended products:",
+    recommendations.map((p) => ({ sku: p.sku, category: p.category }))
+  );
 
   if (recommendations.length === 0) {
     // eslint-disable-next-line no-console
-    console.log('You May Also Like: No matching recommendations found');
+    console.log("You May Also Like: No matching recommendations found");
     return null;
   }
 
   // Build recommendations section
-  const section = document.createElement('div');
-  section.className = 'pd-recommendations';
+  const section = document.createElement("div");
+  section.className = "pd-recommendations";
 
-  const header = document.createElement('div');
-  header.className = 'pd-rec-header';
-  const title = document.createElement('h2');
-  title.className = 'pd-rec-title';
-  title.textContent = 'You May Also Like';
+  const header = document.createElement("div");
+  header.className = "pd-rec-header";
+  const title = document.createElement("h2");
+  title.className = "pd-rec-title";
+  title.textContent = "You May Also Like";
   header.append(title);
 
-  const grid = document.createElement('div');
-  grid.className = 'pd-rec-grid';
+  const grid = document.createElement("div");
+  grid.className = "pd-rec-grid";
 
-  recommendations.forEach(product => {
+  recommendations.forEach((product) => {
     const card = buildRecommendationCard(product, isAuthor);
     grid.append(card);
   });
 
   section.append(header, grid);
-  
+
   // eslint-disable-next-line no-console
-  console.log('You May Also Like: Section created successfully');
+  console.log("You May Also Like: Section created successfully");
   return section;
 }
 
@@ -344,46 +397,47 @@ export default async function decorate(block) {
   const isAuthor = isAuthorEnvironment();
 
   // Extract folder path from block config
-  let folderHref = '';
-  const link = block.querySelector('a[href]');
+  let folderHref = "";
+  const link = block.querySelector("a[href]");
   if (link) {
-    folderHref = link.getAttribute('href');
+    folderHref = link.getAttribute("href");
   } else {
     const config = readBlockConfig(block);
-    folderHref = config.folder || '';
+    folderHref = config.folder || "";
   }
 
   // Strip .html extension if present
-  if (folderHref && folderHref.endsWith('.html')) {
-    folderHref = folderHref.replace(/\.html$/, '');
+  if (folderHref && folderHref.endsWith(".html")) {
+    folderHref = folderHref.replace(/\.html$/, "");
   }
 
   // Get SKU from URL query parameter
-  const sku = getQueryParam('productId');
+  const sku = getQueryParam("productId");
 
   // Clear block content
-  block.textContent = '';
+  block.textContent = "";
 
   if (!folderHref) {
-    const errorMsg = document.createElement('p');
-    errorMsg.className = 'pd-error';
-    errorMsg.textContent = 'Please configure the product folder path in the properties panel.';
+    const errorMsg = document.createElement("p");
+    errorMsg.className = "pd-error";
+    errorMsg.textContent =
+      "Please configure the product folder path in the properties panel.";
     block.appendChild(errorMsg);
     return;
   }
 
   if (!sku) {
-    const errorMsg = document.createElement('p');
-    errorMsg.className = 'pd-error';
-    errorMsg.textContent = 'Product not found. Missing product ID in URL.';
+    const errorMsg = document.createElement("p");
+    errorMsg.className = "pd-error";
+    errorMsg.textContent = "Product not found. Missing product ID in URL.";
     block.appendChild(errorMsg);
     return;
   }
 
   // Show loading state
-  const loader = document.createElement('p');
-  loader.className = 'pd-loading';
-  loader.textContent = 'Loading product details...';
+  const loader = document.createElement("p");
+  loader.className = "pd-loading";
+  loader.textContent = "Loading product details...";
   block.appendChild(loader);
 
   // Fetch product and all products in parallel
@@ -392,12 +446,12 @@ export default async function decorate(block) {
     fetchAllProducts(folderHref, isAuthor),
   ]);
 
-  block.textContent = '';
+  block.textContent = "";
 
   if (!product) {
-    const errorMsg = document.createElement('p');
-    errorMsg.className = 'pd-error';
-    errorMsg.textContent = 'Product not found or failed to load.';
+    const errorMsg = document.createElement("p");
+    errorMsg.className = "pd-error";
+    errorMsg.textContent = "Product not found or failed to load.";
     block.appendChild(errorMsg);
     return;
   }
@@ -407,17 +461,16 @@ export default async function decorate(block) {
   block.appendChild(productDetail);
 
   // eslint-disable-next-line no-console
-  console.log('You May Also Like: Building recommendations...');
-  
+  console.log("You May Also Like: Building recommendations...");
+
   // Display recommendations
   const recommendations = buildRecommendations(product, allProducts, isAuthor);
   if (recommendations) {
     // eslint-disable-next-line no-console
-    console.log('You May Also Like: Appending recommendations to page');
+    console.log("You May Also Like: Appending recommendations to page");
     block.appendChild(recommendations);
   } else {
     // eslint-disable-next-line no-console
-    console.log('You May Also Like: No recommendations to display');
+    console.log("You May Also Like: No recommendations to display");
   }
 }
-

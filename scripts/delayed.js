@@ -109,6 +109,10 @@ function buildTwitterLinks() {
     );
   });
 }
+// Queue for dataLayer updates that occur before dataLayer is ready
+window._dataLayerQueue = window._dataLayerQueue || [];
+window._dataLayerReady = false;
+
 /**
  * Builds the custom data layer
  * Persists and restores dataLayer across page navigations using sessionStorage
@@ -176,11 +180,50 @@ function buildCustomDataLayer() {
       );
     };
 
+    // Mark dataLayer as ready
+    window._dataLayerReady = true;
+
+    // Process any queued updates
+    processDataLayerQueue();
+
     // Dispatch initial event after dataLayer is set up
     // Use setTimeout to ensure event listeners have time to attach
     setTimeout(() => {
       dispatchDataLayerEvent(savedDataLayer ? "restored" : "initialized");
     }, 0);
+
+    /**
+     * Process queued dataLayer updates
+     */
+    function processDataLayerQueue() {
+      if (window._dataLayerQueue && window._dataLayerQueue.length > 0) {
+        console.log(
+          `Processing ${window._dataLayerQueue.length} queued dataLayer update(s)`
+        );
+
+        // Process each queued update
+        window._dataLayerQueue.forEach((queuedUpdate, index) => {
+          const { updates, merge } = queuedUpdate;
+          console.log(`Applying queued update ${index + 1}:`, updates);
+
+          if (merge) {
+            _dataLayer = deepMerge(_dataLayer, updates);
+          } else {
+            _dataLayer = { ..._dataLayer, ...updates };
+          }
+        });
+
+        // Persist final state after all queued updates
+        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(_dataLayer));
+        console.log("All queued updates applied to dataLayer");
+
+        // Clear the queue
+        window._dataLayerQueue = [];
+
+        // Dispatch single update event for all queued updates
+        dispatchDataLayerEvent("updated");
+      }
+    }
 
     // Define window.dataLayer as a read-only property
     Object.defineProperty(window, "dataLayer", {
@@ -206,6 +249,13 @@ function buildCustomDataLayer() {
     window.updateDataLayer = function (updates, merge = true) {
       if (!updates || typeof updates !== "object") {
         console.error("Invalid updates provided to updateDataLayer");
+        return;
+      }
+
+      // If dataLayer is not ready yet, queue the update
+      if (!window._dataLayerReady) {
+        console.log("DataLayer not ready, queuing update:", updates);
+        window._dataLayerQueue.push({ updates, merge });
         return;
       }
 
@@ -255,7 +305,17 @@ function buildCustomDataLayer() {
     // Helper function to clear dataLayer (useful for testing or logout)
     window.clearDataLayer = function () {
       sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      window._dataLayerQueue = [];
       console.log("DataLayer cleared from session");
+    };
+
+    // Helper function to check queue status
+    window.getDataLayerQueueStatus = function () {
+      return {
+        ready: window._dataLayerReady,
+        queueLength: window._dataLayerQueue ? window._dataLayerQueue.length : 0,
+        queue: window._dataLayerQueue || [],
+      };
     };
   } catch (error) {
     console.error("Error initializing dataLayer:", error);
@@ -279,9 +339,39 @@ function buildCustomDataLayer() {
       },
     });
 
-    window.updateDataLayer = function (updates) {
-      _fallbackDataLayer = { ..._fallbackDataLayer, ...updates };
+    window.updateDataLayer = function (updates, merge = true) {
+      // If not ready, queue the update
+      if (!window._dataLayerReady) {
+        console.log(
+          "DataLayer not ready (fallback mode), queuing update:",
+          updates
+        );
+        window._dataLayerQueue.push({ updates, merge });
+        return;
+      }
+
+      if (merge) {
+        _fallbackDataLayer = deepMerge(_fallbackDataLayer, updates);
+      } else {
+        _fallbackDataLayer = { ..._fallbackDataLayer, ...updates };
+      }
     };
+
+    // Mark as ready and process queue even in fallback mode
+    window._dataLayerReady = true;
+    if (window._dataLayerQueue && window._dataLayerQueue.length > 0) {
+      console.log(
+        `Processing ${window._dataLayerQueue.length} queued updates (fallback mode)`
+      );
+      window._dataLayerQueue.forEach(({ updates, merge }) => {
+        if (merge) {
+          _fallbackDataLayer = deepMerge(_fallbackDataLayer, updates);
+        } else {
+          _fallbackDataLayer = { ..._fallbackDataLayer, ...updates };
+        }
+      });
+      window._dataLayerQueue = [];
+    }
   }
 }
 
@@ -420,11 +510,11 @@ function isPageExcluded(excludes, currentPath) {
 }
 
 /**
- * Dispatches a custom event with dataLayer context
+ * Dispatches a custom event
  * @param {string} eventName - Name of the event
  * @param {Object} eventConfig - Event configuration
  * @param {string} pagePath - Current page path
- * @param {Object} additionalDetail - Additional event details
+ * @param {Object} additionalDetail - Additional event details (unused, kept for compatibility)
  */
 function dispatchCustomEvent(
   eventName,
@@ -434,28 +524,35 @@ function dispatchCustomEvent(
 ) {
   const customEvent = new CustomEvent(eventName, {
     bubbles: true,
-    detail: {
-      page: pagePath,
-      dataLayer: window.dataLayer,
-      config: eventConfig,
-      ...additionalDetail,
-    },
   });
-  console.log(`Dispatching custom event: ${eventName}`, customEvent.detail);
+  console.log(
+    `Dispatching custom event: ${eventName}, dataLayer: `,
+    window.dataLayer
+  );
   document.dispatchEvent(customEvent);
 }
 
 /**
  * Triggers custom events based on current page and configuration
- * Only executes when dataLayer is ready and stable
+ * Only executes when dataLayer is ready, stable, and queue is processed
  * @param {Object} config - Custom events configuration
  * @param {string} currentPath - Optional current path (defaults to window.location.pathname)
  */
 function triggerCustomEvents(config = null, currentPath = null) {
   // Wait for dataLayer to be ready and stable
-  if (!window.dataLayer) {
+  if (!window.dataLayer || !window._dataLayerReady) {
     console.warn("DataLayer not ready yet, waiting...");
     // Retry after a short delay
+    setTimeout(() => triggerCustomEvents(config, currentPath), 100);
+    return;
+  }
+
+  // Check if queue is still being processed
+  if (window._dataLayerQueue && window._dataLayerQueue.length > 0) {
+    console.log(
+      `DataLayer queue not empty (${window._dataLayerQueue.length} updates), deferring custom events...`
+    );
+    // Wait for queue to be processed
     setTimeout(() => triggerCustomEvents(config, currentPath), 100);
     return;
   }
@@ -658,11 +755,39 @@ async function initializeCustomEvents() {
       return;
     }
 
-    // Wait for dataLayer to be ready before triggering events
+    // Wait for dataLayer to be ready AND queue to be processed before triggering events
     const checkDataLayerReady = () => {
-      if (window.dataLayer) {
+      // Check all conditions:
+      // 1. DataLayer exists
+      // 2. DataLayer is ready (initialized/restored)
+      // 3. Queue is empty (all queued updates have been processed)
+      // 4. DataLayer is not currently being updated
+      if (
+        window.dataLayer &&
+        window._dataLayerReady &&
+        (!window._dataLayerQueue || window._dataLayerQueue.length === 0) &&
+        !window._dataLayerUpdating
+      ) {
+        console.log(
+          "DataLayer ready and queue processed, triggering custom events"
+        );
         triggerCustomEvents(config);
       } else {
+        // Log status for debugging
+        if (!window.dataLayer) {
+          console.log("Waiting for dataLayer to exist...");
+        } else if (!window._dataLayerReady) {
+          console.log("Waiting for dataLayer to be ready...");
+        } else if (
+          window._dataLayerQueue &&
+          window._dataLayerQueue.length > 0
+        ) {
+          console.log(
+            `Waiting for queue to be processed (${window._dataLayerQueue.length} updates pending)...`
+          );
+        } else if (window._dataLayerUpdating) {
+          console.log("Waiting for dataLayer update to complete...");
+        }
         setTimeout(checkDataLayerReady, 50);
       }
     };
