@@ -356,6 +356,96 @@ async function loadCustomEventsConfig() {
 }
 
 /**
+ * Checks if current page matches the page pattern
+ * @param {string} pagePattern - Page pattern to match (*, exact path, or wildcard)
+ * @param {string} currentPath - Current page path
+ * @returns {boolean} True if page matches
+ */
+function matchesPagePattern(pagePattern, currentPath) {
+  if (!pagePattern || pagePattern === "*") {
+    return true; // Match all pages
+  }
+
+  // Handle query string patterns
+  const currentFullPath = window.location.pathname + window.location.search;
+
+  // Exact match (check both with and without query string)
+  if (pagePattern === currentPath || pagePattern === currentFullPath) {
+    return true;
+  }
+
+  // Wildcard/regex pattern match
+  if (pagePattern.includes("*") || pagePattern.includes("?")) {
+    const regexPattern = pagePattern
+      .replace(/\*/g, ".*")
+      .replace(/\?/g, "\\?")
+      .replace(/\//g, "\\/");
+    const regex = new RegExp(`^${regexPattern}$`);
+    return regex.test(currentPath) || regex.test(currentFullPath);
+  }
+
+  return false;
+}
+
+/**
+ * Checks if current page is excluded
+ * @param {string} excludes - Comma-separated list of excluded paths
+ * @param {string} currentPath - Current page path
+ * @returns {boolean} True if page is excluded
+ */
+function isPageExcluded(excludes, currentPath) {
+  if (!excludes) return false;
+
+  const excludeList = excludes.split(",").map((path) => path.trim());
+  const currentFullPath = window.location.pathname + window.location.search;
+
+  return excludeList.some((excludePath) => {
+    // Exact match
+    if (excludePath === currentPath || excludePath === currentFullPath) {
+      return true;
+    }
+
+    // Check if exclude path is a regex pattern
+    if (excludePath.includes("*") || excludePath.includes("?")) {
+      const regexPattern = excludePath
+        .replace(/\*/g, ".*")
+        .replace(/\?/g, "\\?")
+        .replace(/\//g, "\\/");
+      const regex = new RegExp(`^${regexPattern}$`);
+      return regex.test(currentPath) || regex.test(currentFullPath);
+    }
+
+    return false;
+  });
+}
+
+/**
+ * Dispatches a custom event with dataLayer context
+ * @param {string} eventName - Name of the event
+ * @param {Object} eventConfig - Event configuration
+ * @param {string} pagePath - Current page path
+ * @param {Object} additionalDetail - Additional event details
+ */
+function dispatchCustomEvent(
+  eventName,
+  eventConfig,
+  pagePath,
+  additionalDetail = {}
+) {
+  const customEvent = new CustomEvent(eventName, {
+    bubbles: true,
+    detail: {
+      page: pagePath,
+      dataLayer: window.dataLayer,
+      config: eventConfig,
+      ...additionalDetail,
+    },
+  });
+  console.log(`Dispatching custom event: ${eventName}`, customEvent.detail);
+  document.dispatchEvent(customEvent);
+}
+
+/**
  * Triggers custom events based on current page and configuration
  * Only executes when dataLayer is ready and stable
  * @param {Object} config - Custom events configuration
@@ -396,65 +486,159 @@ function triggerCustomEvents(config = null, currentPath = null) {
 
   const pagePath = currentPath || window.location.pathname;
 
+  // Store event listeners for cleanup
+  if (!window._customEventListeners) {
+    window._customEventListeners = new Map();
+  }
+
   // Process each event configuration in the data array
   if (config.data && Array.isArray(config.data)) {
-    config.data.forEach((eventConfig) => {
-      const { page, excludes, event } = eventConfig;
+    config.data.forEach((eventConfig, index) => {
+      const {
+        page,
+        excludes,
+        event,
+        trigger = "pageload",
+        element = "",
+      } = eventConfig;
 
       // Skip if event name is not defined
-      if (!event) return;
+      if (!event) {
+        console.warn("Event name not defined in config:", eventConfig);
+        return;
+      }
 
-      // Check if current page matches the exclusion list
-      if (excludes) {
-        const excludeList = excludes.split(",").map((path) => path.trim());
-        const isExcluded = excludeList.some((excludePath) => {
-          // Exact match or regex pattern match
-          if (excludePath === pagePath) return true;
-          // Check if exclude path is a regex pattern
-          if (excludePath.includes("*")) {
-            const regexPattern = excludePath
-              .replace(/\*/g, ".*")
-              .replace(/\//g, "\\/");
-            const regex = new RegExp(`^${regexPattern}$`);
-            return regex.test(pagePath);
-          }
-          return false;
-        });
-
-        if (isExcluded) {
-          console.log(`Page ${pagePath} is excluded from event: ${event}`);
-          return;
-        }
+      // Check if current page is excluded
+      if (isPageExcluded(excludes, pagePath)) {
+        console.log(`Page ${pagePath} is excluded from event: ${event}`);
+        return;
       }
 
       // Check if current page matches the page pattern
-      let shouldExecute = false;
+      const shouldExecute = matchesPagePattern(page, pagePath);
 
-      if (page === "*") {
-        // Match all pages
-        shouldExecute = true;
-      } else if (page === pagePath) {
-        // Exact match
-        shouldExecute = true;
-      } else if (page.includes("*")) {
-        // Wildcard/regex pattern match
-        const regexPattern = page.replace(/\*/g, ".*").replace(/\//g, "\\/");
-        const regex = new RegExp(`^${regexPattern}$`);
-        shouldExecute = regex.test(pagePath);
+      if (!shouldExecute) {
+        return;
       }
 
-      // Execute the custom event if conditions match
-      if (shouldExecute) {
-        console.log(`Executing custom event: ${event} for page: ${pagePath}`);
+      // Handle different trigger types
+      switch (trigger.toLowerCase()) {
+        case "pageload":
+        case "domcontentloaded":
+          // Dispatch immediately on page load
+          console.log(
+            `Executing pageload event: ${event} for page: ${pagePath}`
+          );
+          dispatchCustomEvent(event, eventConfig, pagePath);
+          break;
 
-        // Dispatch custom event with dataLayer context
-        const customEvent = new CustomEvent(event, {
-          bubbles: true,
-        });
-        console.log("Dispatching custom event:", customEvent);
-        document.dispatchEvent(customEvent);
+        case "click":
+          // Attach click event listener using event delegation
+          if (!element) {
+            console.warn(
+              `Click trigger requires 'element' selector for event: ${event}`
+            );
+            return;
+          }
+
+          console.log(
+            `Setting up delegated click event: ${event} for selector: ${element}`
+          );
+
+          // Create unique key for this event listener
+          const listenerKey = `${event}_${index}_${element}`;
+
+          // Remove old listener if exists (prevent duplicates)
+          if (window._customEventListeners.has(listenerKey)) {
+            const oldListener = window._customEventListeners.get(listenerKey);
+            document.removeEventListener("click", oldListener.handler);
+          }
+
+          // Event Delegation Pattern: Attach listener to document instead of individual elements
+          // This ensures the event works even for elements added dynamically after page load
+          // Benefits:
+          // 1. Works with dynamically added elements (no need to re-bind)
+          // 2. Single listener instead of multiple (better performance)
+          // 3. Automatically handles elements that are removed/added
+          const delegatedHandler = function (clickEvent) {
+            // Use closest() to handle clicks on nested elements within the target
+            const matchedElement = clickEvent.target.closest(element);
+
+            // Check if click occurred on or within the target element
+            if (matchedElement) {
+              console.log(
+                `Click detected on element for event: ${event}`,
+                matchedElement
+              );
+
+              // Dispatch the custom event with full context
+              dispatchCustomEvent(event, eventConfig, pagePath, {
+                clickedElement: matchedElement,
+                clickEvent: {
+                  target: clickEvent.target,
+                  currentTarget: matchedElement,
+                  type: clickEvent.type,
+                  timeStamp: clickEvent.timeStamp,
+                },
+              });
+            }
+          };
+
+          // Attach the delegated listener to document
+          document.addEventListener("click", delegatedHandler);
+
+          // Store listener for cleanup
+          window._customEventListeners.set(listenerKey, {
+            handler: delegatedHandler,
+            selector: element,
+          });
+
+          console.log(
+            `Delegated click listener attached for event: ${event} on selector: ${element}`
+          );
+          break;
+
+        case "load":
+          // Trigger on window load (all resources loaded)
+          if (document.readyState === "complete") {
+            dispatchCustomEvent(event, eventConfig, pagePath);
+          } else {
+            window.addEventListener(
+              "load",
+              () => {
+                if (shouldExecute) {
+                  dispatchCustomEvent(event, eventConfig, pagePath);
+                }
+              },
+              { once: true }
+            );
+          }
+          break;
+
+        default:
+          console.warn(`Unknown trigger type: ${trigger} for event: ${event}`);
       }
     });
+  }
+}
+
+/**
+ * Cleanup all custom event listeners (useful when navigating away)
+ * Removes all delegated event listeners to prevent memory leaks
+ */
+function cleanupCustomEventListeners() {
+  if (window._customEventListeners) {
+    window._customEventListeners.forEach((listenerData, key) => {
+      // Remove delegated listener from document
+      if (listenerData.handler) {
+        document.removeEventListener("click", listenerData.handler);
+        console.log(
+          `Removed delegated listener for: ${key} (${listenerData.selector})`
+        );
+      }
+    });
+    window._customEventListeners.clear();
+    console.log("All custom event listeners cleaned up");
   }
 }
 
@@ -489,8 +673,9 @@ async function initializeCustomEvents() {
   }
 }
 
-// Make triggerCustomEvents globally accessible
+// Make functions globally accessible
 window.triggerCustomEvents = triggerCustomEvents;
+window.cleanupCustomEventListeners = cleanupCustomEventListeners;
 
 if (!window.location.hostname.includes("localhost")) {
   embedCustomLibraries();
