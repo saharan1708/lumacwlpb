@@ -1,4 +1,4 @@
-import { createOptimizedPicture } from "../../scripts/aem.js";
+import { createOptimizedPicture, readBlockConfig } from "../../scripts/aem.js";
 import { isAuthorEnvironment } from "../../scripts/scripts.js";
 
 /**
@@ -391,10 +391,185 @@ function buildCartSummary(cartData) {
 }
 
 /**
- * Build "You May Also Like" section
- * @returns {HTMLElement} Recommendations section
+ * Fetch all products from a folder
+ * @param {string} path - Content fragment folder path
+ * @param {boolean} isAuthor - Is author environment
+ * @returns {Promise<Array>} - Array of products
  */
-function buildRecommendations() {
+async function fetchAllProducts(path, isAuthor) {
+  try {
+    if (!path) {
+      // eslint-disable-next-line no-console
+      console.log("You May Also Like: No path provided");
+      return [];
+    }
+    const baseUrl = isAuthor
+      ? "https://author-p168578-e1802821.adobeaemcloud.com"
+      : "https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGraphQl";
+    const url = `${baseUrl}/graphql/execute.json/luma3/menproductspagelister?_path=${path}`;
+    // eslint-disable-next-line no-console
+    console.log("You May Also Like: Fetching from URL:", url);
+    const resp = await fetch(url, { method: "GET" });
+    const json = await resp.json();
+    // eslint-disable-next-line no-console
+    console.log("You May Also Like: GraphQL response:", json);
+    const items = json?.data?.productsModelList?.items || [];
+    const filtered = items.filter((item) => item && item.sku);
+    // eslint-disable-next-line no-console
+    console.log("You May Also Like: All products fetched:", filtered.length);
+    return filtered;
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error("Cart: fetch all products error", e);
+    return [];
+  }
+}
+
+/**
+ * Build a recommendation card
+ * @param {Object} item - Product data
+ * @param {boolean} isAuthor - Is author environment
+ * @returns {HTMLElement} - Product card
+ */
+function buildRecommendationCard(item, isAuthor) {
+  const { id, sku, name, image = {}, category = [] } = item || {};
+  let imgUrl = isAuthor ? image?._authorUrl : image?._publishUrl;
+  const productId = sku || id || "";
+
+  const card = document.createElement("article");
+  card.className = "cart-rec-card";
+
+  // Make card clickable and redirect to product page
+  if (productId) {
+    card.style.cursor = "pointer";
+    card.addEventListener("click", () => {
+      const currentPath = window.location.pathname;
+
+      // Smart path construction: ensure we navigate to the correct product page
+      let basePath = currentPath.substring(0, currentPath.lastIndexOf("/"));
+
+      // If the current page doesn't have a language segment, try to add it
+      const langPattern = /\/(en|fr|de|es|it|ja|zh|pt|nl|sv|da|no|fi)$/;
+      if (!langPattern.test(basePath) && !basePath.includes("/en/")) {
+        const pathMatch = currentPath.match(
+          /\/(en|fr|de|es|it|ja|zh|pt|nl|sv|da|no|fi)\//
+        );
+        if (pathMatch) {
+          const langCode = pathMatch[1];
+          const langIndex = currentPath.indexOf(`/${langCode}/`);
+          basePath = currentPath.substring(0, langIndex + langCode.length + 1);
+        } else {
+          basePath = `${basePath}/en`;
+        }
+      }
+
+      // On author add .html extension, on publish don't
+      const productPath = isAuthor
+        ? `${basePath}/product.html`
+        : `${basePath}/product`;
+      window.location.href = `${productPath}?productId=${encodeURIComponent(
+        productId
+      )}`;
+    });
+  }
+
+  // Handle image display for author vs publish
+  let picture = null;
+  if (imgUrl) {
+    if (!isAuthor && imgUrl.startsWith("http")) {
+      picture = document.createElement("picture");
+      const img = document.createElement("img");
+      img.src = imgUrl;
+      img.alt = name || "Product image";
+      img.loading = "lazy";
+      picture.appendChild(img);
+    } else {
+      picture = createOptimizedPicture(imgUrl, name || "Product image", false, [
+        { media: "(min-width: 900px)", width: "600" },
+        { media: "(min-width: 600px)", width: "400" },
+        { width: "320" },
+      ]);
+    }
+  }
+
+  const imgWrap = document.createElement("div");
+  imgWrap.className = "cart-rec-card-media";
+  if (picture) imgWrap.append(picture);
+
+  const meta = document.createElement("div");
+  meta.className = "cart-rec-card-meta";
+  const categoryText = category && category.length ? category.join(", ") : "";
+  const cat = document.createElement("p");
+  cat.className = "cart-rec-card-category";
+  cat.textContent = categoryText.replaceAll("luma:", "").replaceAll("/", ", ");
+  const title = document.createElement("h3");
+  title.className = "cart-rec-card-title";
+  title.textContent = name || "";
+  meta.append(cat, title);
+
+  card.append(imgWrap, meta);
+  return card;
+}
+
+/**
+ * Build "You May Also Like" recommendations section
+ * @param {Array} allProducts - All products from the folder
+ * @param {Object} cartData - Cart data from dataLayer
+ * @param {boolean} isAuthor - Is author environment
+ * @returns {HTMLElement|null} Recommendations section
+ */
+function buildRecommendations(allProducts, cartData, isAuthor) {
+  // Get categories from cart products
+  const cartProducts = Object.values(cartData.products || {});
+  const cartCategories = new Set();
+
+  cartProducts.forEach((product) => {
+    if (product.category) {
+      // Split by comma and clean up
+      const categories = product.category.split(",").map((c) => c.trim());
+      categories.forEach((cat) => {
+        // Convert back to luma: format for matching
+        const lumaCategory = `luma:${cat.replace(/ \/ /g, "/")}`;
+        cartCategories.add(lumaCategory);
+      });
+    }
+  });
+
+  // eslint-disable-next-line no-console
+  console.log(
+    "You May Also Like: Cart categories:",
+    Array.from(cartCategories)
+  );
+
+  if (cartCategories.size === 0 || allProducts.length === 0) {
+    return null;
+  }
+
+  // Get cart product IDs to exclude
+  const cartProductIds = new Set(Object.keys(cartData.products || {}));
+
+  // Filter products by matching category and exclude items in cart
+  const recommendations = allProducts
+    .filter((product) => {
+      // Exclude products already in cart
+      if (cartProductIds.has(product.sku || product.id)) return false;
+
+      // Check if product has any matching category
+      const productCategories = product.category || [];
+      return productCategories.some((cat) => cartCategories.has(cat));
+    })
+    .slice(0, 5); // Limit to 5 products
+
+  // eslint-disable-next-line no-console
+  console.log(
+    "You May Also Like: Filtered recommendations:",
+    recommendations.length
+  );
+
+  if (recommendations.length === 0) {
+    return null;
+  }
+
   const section = document.createElement("div");
   section.className = "cart-recommendations";
 
@@ -405,12 +580,10 @@ function buildRecommendations() {
   const grid = document.createElement("div");
   grid.className = "cart-rec-grid";
 
-  // Placeholder for recommendations
-  // TODO: Fetch and display actual product recommendations
-  const placeholder = document.createElement("p");
-  placeholder.className = "cart-rec-placeholder";
-  placeholder.textContent = "Product recommendations coming soon...";
-  grid.appendChild(placeholder);
+  recommendations.forEach((product) => {
+    const card = buildRecommendationCard(product, isAuthor);
+    grid.append(card);
+  });
 
   section.append(title, grid);
   return section;
@@ -437,6 +610,23 @@ function setupDataLayerListener(block) {
  * @param {HTMLElement} block - The block element
  */
 export default async function decorate(block) {
+  const isAuthor = isAuthorEnvironment();
+
+  // Extract folder path from block config
+  let folderHref = "";
+  const link = block.querySelector("a[href]");
+  if (link) {
+    folderHref = link.getAttribute("href");
+  } else {
+    const config = readBlockConfig(block);
+    folderHref = config.folder || "";
+  }
+
+  // Strip .html extension if present
+  if (folderHref && folderHref.endsWith(".html")) {
+    folderHref = folderHref.replace(/\.html$/, "");
+  }
+
   block.textContent = "";
 
   // Build cart structure
@@ -481,11 +671,21 @@ export default async function decorate(block) {
   cartContent.className = "cart-content";
   cartContent.append(mainSection, summary);
 
-  // Build recommendations section
-  const recommendations = buildRecommendations();
-
-  container.append(title, cartContent, recommendations);
+  container.append(title, cartContent);
   block.appendChild(container);
+
+  // Fetch products and build recommendations if folder is provided
+  if (folderHref) {
+    const allProducts = await fetchAllProducts(folderHref, isAuthor);
+    const recommendations = buildRecommendations(
+      allProducts,
+      currentCart,
+      isAuthor
+    );
+    if (recommendations) {
+      container.appendChild(recommendations);
+    }
+  }
 
   // Setup dataLayer listener for real-time updates
   setupDataLayerListener(block);

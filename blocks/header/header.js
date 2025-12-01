@@ -590,7 +590,7 @@ export default async function decorate(block) {
 
     // Add Cart Icon
     const cartLink = document.createElement("a");
-    cartLink.href = "/cart";
+    cartLink.href = "/en/cart";
     cartLink.className = "cart-icon";
     cartLink.setAttribute("aria-label", "Shopping Cart");
     cartLink.setAttribute("title", "Shopping Cart");

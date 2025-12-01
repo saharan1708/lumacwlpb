@@ -19,7 +19,16 @@
   "models": [
     {
       "id": "cart",
-      "fields": []
+      "fields": [
+        {
+          "component": "aem-content",
+          "name": "folder",
+          "label": "Product Folder",
+          "valueType": "string",
+          "required": false,
+          "rootPath": "/content/dam"
+        }
+      ]
     }
   ]
 }
