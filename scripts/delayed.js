@@ -509,7 +509,7 @@ window.cleanupCustomEventListeners = cleanupCustomEventListeners;
 if (!window.location.hostname.includes("localhost")) {
   embedCustomLibraries();
   if (!(window.location.href.indexOf("/canvas/") > -1)) {
-    loadAT();
+   // loadAT();
   }
 }
 
