@@ -529,7 +529,7 @@ function buildRecommendations(allProducts, cartData, isAuthor) {
       const categories = product.category.split(",").map((c) => c.trim());
       categories.forEach((cat) => {
         // Convert back to luma: format for matching
-        const lumaCategory = `luma:${cat.replace(/ \/ /g, "/")}`;
+        const lumaCategory = `${cat.replace(/ \/ /g, "/")}`;
         cartCategories.add(lumaCategory);
       });
     }
@@ -541,12 +541,19 @@ function buildRecommendations(allProducts, cartData, isAuthor) {
     Array.from(cartCategories)
   );
 
-  if (cartCategories.size === 0 || allProducts.length === 0) {
-    return null;
-  }
-
   // Get cart product IDs to exclude
   const cartProductIds = new Set(Object.keys(cartData.products || {}));
+
+  // Debug: Log first few product categories from allProducts
+  // eslint-disable-next-line no-console
+  console.log(
+    "You May Also Like: Sample product categories from allProducts:",
+    allProducts.slice(0, 3).map((p) => ({
+      sku: p.sku,
+      name: p.name,
+      categories: p.category,
+    }))
+  );
 
   // Filter products by matching category and exclude items in cart
   const recommendations = allProducts
@@ -592,15 +599,40 @@ function buildRecommendations(allProducts, cartData, isAuthor) {
 /**
  * Listen for dataLayer updates and refresh cart
  * @param {HTMLElement} block - Cart block element
+ * @param {string} folderHref - Product folder path
+ * @param {boolean} isAuthor - Is author environment
+ * @param {Array} allProducts - Cached products list
  */
-function setupDataLayerListener(block) {
-  document.addEventListener("dataLayerUpdated", (event) => {
+function setupDataLayerListener(block, folderHref, isAuthor, allProducts) {
+  document.addEventListener("dataLayerUpdated", async (event) => {
     const { dataLayer } = event.detail;
     if (dataLayer && dataLayer.cart) {
       // eslint-disable-next-line no-console
       console.log("Cart data updated, refreshing display");
       renderCartItems(block, dataLayer.cart);
       updateCartTotals(block, dataLayer.cart);
+
+      // Rebuild recommendations if folder is provided
+      if (folderHref && allProducts && allProducts.length > 0) {
+        const container = block.querySelector(".cart-container");
+        if (container) {
+          // Remove existing recommendations
+          const existingRec = container.querySelector(".cart-recommendations");
+          if (existingRec) {
+            existingRec.remove();
+          }
+
+          // Build new recommendations based on updated cart
+          const recommendations = buildRecommendations(
+            allProducts,
+            dataLayer.cart,
+            isAuthor
+          );
+          if (recommendations) {
+            container.appendChild(recommendations);
+          }
+        }
+      }
     }
   });
 }
@@ -675,8 +707,9 @@ export default async function decorate(block) {
   block.appendChild(container);
 
   // Fetch products and build recommendations if folder is provided
+  let allProducts = [];
   if (folderHref) {
-    const allProducts = await fetchAllProducts(folderHref, isAuthor);
+    allProducts = await fetchAllProducts(folderHref, isAuthor);
     const recommendations = buildRecommendations(
       allProducts,
       currentCart,
@@ -688,7 +721,7 @@ export default async function decorate(block) {
   }
 
   // Setup dataLayer listener for real-time updates
-  setupDataLayerListener(block);
+  setupDataLayerListener(block, folderHref, isAuthor, allProducts);
 
   // eslint-disable-next-line no-console
   console.log("Cart initialized with", currentCart.productCount, "items");

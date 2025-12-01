@@ -296,9 +296,16 @@ main .cart .cart-rec-title {
 }
 
 main .cart .cart-rec-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 24px;
+    justify-content: center;
+}
+
+main .cart .cart-rec-grid .cart-rec-card {
+    flex: 0 0 calc((100% - 96px) / 5);
+    max-width: 280px;
+    min-width: 220px;
 }
 
 /* Recommendation Card */
@@ -374,22 +381,28 @@ main .cart .cart-rec-card-title {
 
 /* Responsive Grid Adjustments */
 @media (width >= 1200px) {
-    main .cart .cart-rec-grid {
-        grid-template-columns: repeat(5, 1fr);
+    main .cart .cart-rec-grid .cart-rec-card {
+        flex: 0 0 calc((100% - 96px) / 5);
     }
 }
 
 @media (width >= 900px) and (width < 1200px) {
     main .cart .cart-rec-grid {
-        grid-template-columns: repeat(4, 1fr);
         gap: 20px;
+    }
+
+    main .cart .cart-rec-grid .cart-rec-card {
+        flex: 0 0 calc((100% - 60px) / 4);
     }
 }
 
 @media (width >= 600px) and (width < 900px) {
     main .cart .cart-rec-grid {
-        grid-template-columns: repeat(3, 1fr);
         gap: 20px;
+    }
+
+    main .cart .cart-rec-grid .cart-rec-card {
+        flex: 0 0 calc((100% - 40px) / 3);
     }
 }
 
@@ -493,8 +506,11 @@ main .cart .cart-rec-card-title {
     }
 
     main .cart .cart-rec-grid {
-        grid-template-columns: repeat(2, 1fr);
         gap: 20px;
+    }
+
+    main .cart .cart-rec-grid .cart-rec-card {
+        flex: 0 0 calc((100% - 20px) / 2);
     }
 }
 
@@ -544,7 +560,10 @@ main .cart .cart-rec-card-title {
     }
 
     main .cart .cart-rec-grid {
-        grid-template-columns: 1fr;
         gap: 16px;
+    }
+
+    main .cart .cart-rec-grid .cart-rec-card {
+        flex: 0 0 100%;
     }
 }
