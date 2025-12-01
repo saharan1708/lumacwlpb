@@ -224,18 +224,58 @@ function renderCartItems(block, cartData) {
   const isAuthor = isAuthorEnvironment();
   const itemsContainer = block.querySelector(".cart-items");
 
-  if (!itemsContainer) return;
+  if (!itemsContainer) {
+    console.error("✗ Cart items container (.cart-items) not found in DOM");
+    return;
+  }
 
   itemsContainer.innerHTML = "";
 
   const products = cartData.products || {};
   const productValues = Object.values(products);
+  const isEmpty = productValues.length === 0;
 
-  if (productValues.length === 0) {
-    const emptyMsg = document.createElement("div");
-    emptyMsg.className = "cart-empty";
+  console.log(`Rendering ${productValues.length} cart item(s)`);
+
+  // Hide/show cart summary based on cart state
+  const cartSummary = block.querySelector(".cart-summary");
+  if (cartSummary) {
+    cartSummary.style.display = isEmpty ? "none" : "block";
+  }
+
+  // Adjust main section layout when empty
+  const mainSection = block.querySelector(".cart-main");
+  if (mainSection) {
+    if (isEmpty) {
+      mainSection.classList.add("cart-empty-state");
+    } else {
+      mainSection.classList.remove("cart-empty-state");
+    }
+  }
+
+  if (isEmpty) {
+    const emptyContainer = document.createElement("div");
+    emptyContainer.className = "cart-empty";
+
+    const emptyIcon = document.createElement("div");
+    emptyIcon.className = "cart-empty-icon";
+    emptyIcon.innerHTML = "🛒";
+
+    const emptyMsg = document.createElement("h2");
+    emptyMsg.className = "cart-empty-message";
     emptyMsg.textContent = "Your cart is empty";
-    itemsContainer.appendChild(emptyMsg);
+
+    const emptyText = document.createElement("p");
+    emptyText.className = "cart-empty-text";
+    emptyText.textContent = "Add some products to get started";
+
+    const shopButton = document.createElement("a");
+    shopButton.className = "cart-empty-button button primary";
+    shopButton.href = "/";
+    shopButton.textContent = "Continue Shopping";
+
+    emptyContainer.append(emptyIcon, emptyMsg, emptyText, shopButton);
+    itemsContainer.appendChild(emptyContainer);
     return;
   }
 
@@ -687,15 +727,24 @@ export default async function decorate(block) {
     ? window.getDataLayerProperty("cart")
     : null;
 
+  if (!window.getDataLayerProperty) {
+    console.warn(
+      "⚠️ getDataLayerProperty not available yet - cart may not display correctly"
+    );
+  } else if (cartData) {
+    console.log("✓ Cart data loaded from dataLayer:", {
+      productCount: cartData.productCount,
+      products: Object.keys(cartData.products || {}),
+      total: cartData.total,
+    });
+  }
+
   const currentCart = cartData || {
     productCount: 0,
     products: {},
     subTotal: 0,
     total: 0,
   };
-
-  // Render initial cart items
-  renderCartItems(block, currentCart);
 
   // Build cart summary
   const summary = buildCartSummary(currentCart);
@@ -706,7 +755,13 @@ export default async function decorate(block) {
   cartContent.append(mainSection, summary);
 
   container.append(title, cartContent);
+
+  // Append container to block BEFORE rendering items
+  // This ensures .cart-items element is in the DOM when renderCartItems queries for it
   block.appendChild(container);
+
+  // Render initial cart items (must be after block.appendChild)
+  renderCartItems(block, currentCart);
 
   // Fetch products and build recommendations if folder is provided
   let allProducts = [];

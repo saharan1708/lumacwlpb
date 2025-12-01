@@ -9,33 +9,6 @@ function generateOrderNumber() {
 }
 
 /**
- * Reset dataLayer to default state
- */
-function resetDataLayer() {
-  const defaultCart = {
-    productCount: 0,
-    products: {},
-    subTotal: 0,
-    total: 0,
-  };
-
-  if (window.updateDataLayer) {
-    window.updateDataLayer({ cart: defaultCart });
-    // eslint-disable-next-line no-console
-    console.log("DataLayer cart reset to default");
-  }
-}
-
-/**
- * Clear checkout data from localStorage
- */
-function clearCheckoutData() {
-  localStorage.removeItem("luma_checkout_data");
-  // eslint-disable-next-line no-console
-  console.log("Checkout data cleared from localStorage");
-}
-
-/**
  * Navigate to home page
  */
 function navigateToHome() {
@@ -85,12 +58,8 @@ function buildConfirmationContent(orderNumber) {
   homeBtn.className = "order-confirmation-btn";
   homeBtn.textContent = "RETURN TO HOME PAGE";
   homeBtn.addEventListener("click", () => {
-    resetDataLayer();
-    clearCheckoutData();
-    // Small delay to ensure dataLayer is updated
-    setTimeout(() => {
-      navigateToHome();
-    }, 100);
+    // Cart already cleared in order-summary page - just navigate home
+    navigateToHome();
   });
 
   message.append(thankYou, subtitle, orderInfo, details, shippingInfo, support);

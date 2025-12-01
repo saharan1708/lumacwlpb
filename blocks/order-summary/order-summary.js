@@ -231,9 +231,11 @@ function buildOrderSummary(checkoutData, cartData) {
 }
 
 /**
- * Reset dataLayer to default state and clear cart
+ * Reset cart in dataLayer to default state
+ * Note: Does NOT clear checkout form data (personal/address info)
+ * User's personal information is preserved for future orders
  */
-function resetDataLayer() {
+function resetCart() {
   const defaultCart = {
     productCount: 0,
     products: {},
@@ -244,17 +246,11 @@ function resetDataLayer() {
   if (window.updateDataLayer) {
     window.updateDataLayer({ cart: defaultCart, product: null }, false);
     // eslint-disable-next-line no-console
-    console.log("DataLayer cart reset to default");
+    console.log("✓ Cart cleared - ready for next order");
+    console.log(
+      "→ Personal information preserved for faster checkout next time"
+    );
   }
-}
-
-/**
- * Clear checkout data from localStorage
- */
-function clearCheckoutData() {
-  localStorage.removeItem("luma_checkout_data");
-  // eslint-disable-next-line no-console
-  console.log("Checkout data cleared from localStorage");
 }
 
 /**
@@ -278,9 +274,8 @@ function buildButtons() {
   confirmBtn.className = "order-summary-btn order-summary-btn-confirm";
   confirmBtn.textContent = "CONFIRM ORDER";
   confirmBtn.addEventListener("click", () => {
-    // Clear cart and checkout data before navigating to confirmation
-    resetDataLayer();
-    clearCheckoutData();
+    // Clear cart but preserve personal/address information
+    resetCart();
 
     // Small delay to ensure dataLayer is updated and cart badge is cleared
     setTimeout(() => {

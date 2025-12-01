@@ -1,20 +1,43 @@
 /**
  * Save form data to localStorage
+ * Delegates to global saveCheckoutData() from datalayer.js for consistent storage management
  * @param {Object} formData - Form data to save
  */
-function saveCheckoutData(formData) {
-  localStorage.setItem("luma_checkout_data", JSON.stringify(formData));
-  // eslint-disable-next-line no-console
-  console.log("Checkout data saved to localStorage:", formData);
+function saveFormData(formData) {
+  if (typeof window.saveCheckoutData === "function") {
+    window.saveCheckoutData(formData);
+  } else {
+    // Fallback if datalayer.js not loaded yet
+    console.warn("⚠ window.saveCheckoutData() not available, using fallback");
+    try {
+      const now = Date.now().toString();
+      localStorage.setItem("luma_checkout_data", JSON.stringify(formData));
+      localStorage.setItem("luma_checkout_data_timestamp", now);
+    } catch (error) {
+      console.error("Failed to save checkout data:", error);
+    }
+  }
 }
 
 /**
  * Load saved checkout data from localStorage
+ * Delegates to global loadCheckoutData() from datalayer.js for consistent storage management
  * @returns {Object|null} Saved checkout data
  */
-function loadCheckoutData() {
-  const saved = localStorage.getItem("luma_checkout_data");
-  return saved ? JSON.parse(saved) : null;
+function loadFormData() {
+  if (typeof window.loadCheckoutData === "function") {
+    return window.loadCheckoutData();
+  } else {
+    // Fallback if datalayer.js not loaded yet
+    console.warn("⚠ window.loadCheckoutData() not available, using fallback");
+    try {
+      const saved = localStorage.getItem("luma_checkout_data");
+      return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+      console.error("Failed to load checkout data:", error);
+      return null;
+    }
+  }
 }
 
 /**
@@ -126,7 +149,21 @@ function navigateToPage(page) {
  * @returns {HTMLElement} Checkout form
  */
 function buildCheckoutForm() {
-  const savedData = loadCheckoutData();
+  const savedData = loadFormData();
+
+  // Log helpful message about pre-populated data
+  if (savedData && Object.keys(savedData).length > 0) {
+    const filledFields = Object.keys(savedData).filter(
+      (key) => savedData[key]
+    ).length;
+    console.log(
+      `✓ Checkout form pre-populated with saved data (${filledFields} field${
+        filledFields !== 1 ? "s" : ""
+      })`
+    );
+  } else {
+    console.log("No saved checkout data found - form is empty");
+  }
 
   const form = document.createElement("form");
   form.className = "checkout-form";
@@ -357,6 +394,38 @@ function buildCheckoutForm() {
 
   form.append(personalSection, summarySection, buttonGroup);
 
+  // Auto-save form data as user types (debounced)
+  let autoSaveTimeout;
+  const autoSaveDelay = 1000; // 1 second debounce
+
+  function autoSaveFormData() {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+      const formData = {
+        firstName: form.firstName.value.trim(),
+        lastName: form.lastName.value.trim(),
+        email: form.email.value.trim(),
+        phone: form.phone.value.trim(),
+        streetAddress: form.streetAddress.value.trim(),
+        city: form.city.value.trim(),
+        postalCode: form.postalCode.value.trim(),
+        country: form.country.value,
+      };
+
+      // Only save if at least one field has content
+      const hasContent = Object.values(formData).some((value) => value);
+      if (hasContent) {
+        saveFormData(formData);
+      }
+    }, autoSaveDelay);
+  }
+
+  // Attach auto-save to all form inputs
+  form.querySelectorAll("input, select").forEach((input) => {
+    input.addEventListener("input", autoSaveFormData);
+    input.addEventListener("change", autoSaveFormData);
+  });
+
   // Form submit handler
   form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -375,7 +444,7 @@ function buildCheckoutForm() {
     const validation = validateForm(formData);
 
     if (validation.isValid) {
-      saveCheckoutData(formData);
+      saveFormData(formData);
       clearErrors(form);
       navigateToPage("order-summary");
     } else {
