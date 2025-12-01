@@ -183,25 +183,31 @@ function buildProductDetail(product, isAuthor) {
   // If dataLayer is not ready, the update will be queued automatically
   const imageUrl = isAuthor ? image?._authorUrl : image?._publishUrl;
 
-  window.updateDataLayer({
-    product: {
-      id: id || sku || "",
-      sku: sku || "",
-      name: name || "",
-      price: price || 0,
-      category:
-        category.length > 0
-          ? category
-              .map((cat) => cat.replace(/^luma:/, "").replace(/\//g, " / "))
-              .join(", ")
-          : "",
-      description: description?.html || description?.markdown || "",
-      image: imageUrl || "",
-    },
-  });
+  const productData = {
+    id: id || sku || "",
+    sku: sku || "",
+    name: name || "",
+    price: price || 0,
+    category:
+      category.length > 0
+        ? category
+            .map((cat) => cat.replace(/^luma:/, "").replace(/\//g, " / "))
+            .join(", ")
+        : "",
+    description: description?.html || description?.markdown || "",
+    image: imageUrl || "",
+  };
 
-  // eslint-disable-next-line no-console
-  console.log("Product data sent to dataLayer (queued if not ready)");
+  if (typeof window.updateDataLayer === "function") {
+    window.updateDataLayer({ product: productData });
+    // eslint-disable-next-line no-console
+    console.log("✓ Product data sent to dataLayer:", productData);
+  } else {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "⚠️ window.updateDataLayer not available, product data not sent"
+    );
+  }
 
   const container = document.createElement("div");
   container.className = "pd-container";

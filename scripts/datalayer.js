@@ -26,22 +26,31 @@ const CHECKOUT_TTL = 90 * 24 * 60 * 60 * 1000; // 90 days - longer persistence f
 
 /**
  * Deep merge utility function for nested objects
+ * Handles null values correctly - replaces null with source value
  * @param {Object} target - Target object
  * @param {Object} source - Source object to merge from
  * @returns {Object} Merged object
  */
 function deepMerge(target, source) {
+  // If target is null/undefined, return source
+  if (!target) {
+    return isObject(source) ? { ...source } : source;
+  }
+  
   const output = { ...target };
   if (isObject(target) && isObject(source)) {
     Object.keys(source).forEach((key) => {
       if (isObject(source[key])) {
-        if (!(key in target)) {
-          Object.assign(output, { [key]: source[key] });
+        // If target[key] is null/undefined or not an object, replace with source
+        if (!target[key] || !isObject(target[key])) {
+          output[key] = { ...source[key] };
         } else {
+          // Both are objects, deep merge them
           output[key] = deepMerge(target[key], source[key]);
         }
       } else {
-        Object.assign(output, { [key]: source[key] });
+        // Primitive value or null, just replace
+        output[key] = source[key];
       }
     });
   }
@@ -99,7 +108,7 @@ function processDataLayerQueue() {
       const now = Date.now().toString();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(_dataLayer));
       localStorage.setItem(STORAGE_TIMESTAMP_KEY, now);
-      console.log("All queued updates applied to dataLayer");
+    console.log("All queued updates applied to dataLayer");
     } catch (storageError) {
       console.warn("⚠ Could not persist dataLayer:", storageError.message);
     }
@@ -272,6 +281,7 @@ export function buildCustomDataLayer() {
         },
         page: { name: "home", title: "HOME" },
         cart: {},
+        product: null, // Will be populated on product detail pages
         partnerData: {
           PartnerID: "Partner456",
           BrandLoyalist: 88,
@@ -292,10 +302,10 @@ export function buildCustomDataLayer() {
       const now = Date.now().toString();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(_dataLayer));
       localStorage.setItem(STORAGE_TIMESTAMP_KEY, now);
-      console.log("DataLayer page info updated:", {
-        title: _dataLayer.page.title,
-        name: _dataLayer.page.name,
-      });
+    console.log("DataLayer page info updated:", {
+      title: _dataLayer.page.title,
+      name: _dataLayer.page.name,
+    });
     } catch (storageError) {
       console.warn("⚠ Could not persist dataLayer:", storageError.message);
     }
@@ -384,6 +394,9 @@ window.updateDataLayer = function (updates, merge = true) {
   // Set updating flag
   window._dataLayerUpdating = true;
 
+  // Log what's being updated
+  console.log(`Updating dataLayer (merge: ${merge}):`, updates);
+
   if (merge) {
     // Deep merge the updates with existing dataLayer
     _dataLayer = deepMerge(_dataLayer, updates);
@@ -397,7 +410,15 @@ window.updateDataLayer = function (updates, merge = true) {
     const now = Date.now().toString();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(_dataLayer));
     localStorage.setItem(STORAGE_TIMESTAMP_KEY, now);
-    console.log("DataLayer updated:", _dataLayer);
+    console.log("✓ DataLayer updated successfully");
+    
+    // Log specific properties that were updated
+    if (updates.product) {
+      console.log("→ Product info:", _dataLayer.product);
+    }
+    if (updates.cart) {
+      console.log("→ Cart info: " + _dataLayer.cart.productCount + " items, $" + _dataLayer.cart.total);
+    }
   } catch (storageError) {
     console.warn("⚠ Could not persist dataLayer:", storageError.message);
   }
