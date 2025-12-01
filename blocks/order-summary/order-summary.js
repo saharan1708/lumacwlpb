@@ -39,6 +39,85 @@ function navigateToPage(page) {
 }
 
 /**
+ * Build a single cart item (read-only version)
+ * @param {Object} product - Product data
+ * @returns {HTMLElement} Cart item element
+ */
+function buildCartItem(product) {
+  const item = document.createElement("div");
+  item.className = "order-summary-item";
+  item.setAttribute("data-product-id", product.id);
+
+  // Image
+  const imageWrapper = document.createElement("div");
+  imageWrapper.className = "order-summary-item-image";
+  if (product.images) {
+    const img = document.createElement("img");
+    img.src = product.images;
+    img.alt = product.name || "Product image";
+    img.loading = "lazy";
+    imageWrapper.appendChild(img);
+  }
+
+  // Details
+  const details = document.createElement("div");
+  details.className = "order-summary-item-details";
+
+  // Product name
+  const name = document.createElement("h3");
+  name.className = "order-summary-item-name";
+  name.textContent = product.name || "";
+
+  // Category
+  if (product.category) {
+    const category = document.createElement("p");
+    category.className = "order-summary-item-category";
+    category.textContent = product.category.replace(/luma:|lumaproducts:/g, "").replace(/\//g, " / ").replace(/\b\w/g, (l) => l.toUpperCase());
+    details.appendChild(category);
+  }
+
+  details.appendChild(name);
+
+  // Size/Color if available
+  if (product.size || product.color) {
+    const attributes = document.createElement("div");
+    attributes.className = "order-summary-item-attributes";
+    
+    if (product.size) {
+      const size = document.createElement("span");
+      size.textContent = `Size: ${product.size}`;
+      attributes.appendChild(size);
+    }
+    
+    if (product.color) {
+      const color = document.createElement("span");
+      color.textContent = `Color: ${product.color}`;
+      attributes.appendChild(color);
+    }
+    
+    details.appendChild(attributes);
+  }
+
+  // Price and Quantity
+  const priceQty = document.createElement("div");
+  priceQty.className = "order-summary-item-price-qty";
+  
+  const qtyDisplay = document.createElement("div");
+  qtyDisplay.className = "order-summary-item-qty-display";
+  qtyDisplay.innerHTML = `<span>Qty:</span> <strong>${product.quantity || 1}</strong>`;
+
+  const price = document.createElement("div");
+  price.className = "order-summary-item-price";
+  price.textContent = formatPrice(product.price * (product.quantity || 1));
+
+  priceQty.append(qtyDisplay, price);
+  details.appendChild(priceQty);
+
+  item.append(imageWrapper, details);
+  return item;
+}
+
+/**
  * Build order summary
  * @param {Object} checkoutData - Checkout data from localStorage
  * @param {Object} cartData - Cart data from dataLayer
@@ -55,44 +134,20 @@ function buildOrderSummary(checkoutData, cartData) {
   const products = Object.values(cartData.products || {});
 
   if (products.length > 0) {
+    const itemsTitle = document.createElement("h2");
+    itemsTitle.className = "order-summary-items-title";
+    itemsTitle.textContent = `Order Items (${products.length})`;
+    leftColumn.appendChild(itemsTitle);
+
+    const itemsList = document.createElement("div");
+    itemsList.className = "order-summary-items-list";
+    
     products.forEach((product) => {
-      const item = document.createElement("div");
-      item.className = "order-summary-item";
-
-      const image = document.createElement("div");
-      image.className = "order-summary-item-image";
-      if (product.images) {
-        const img = document.createElement("img");
-        img.src = product.images;
-        img.alt = product.name || "Product image";
-        img.loading = "lazy";
-        image.appendChild(img);
-      }
-
-      const details = document.createElement("div");
-      details.className = "order-summary-item-details";
-
-      const name = document.createElement("div");
-      name.className = "order-summary-item-name";
-      name.textContent = product.name || "";
-
-      const meta = document.createElement("div");
-      meta.className = "order-summary-item-meta";
-      meta.innerHTML = `
-        <div class="order-summary-item-row">
-          <span>QTY</span>
-          <span>${product.quantity || 1}</span>
-        </div>
-        <div class="order-summary-item-row">
-          <span>PRICE</span>
-          <span>${formatPrice(product.price || 0)}</span>
-        </div>
-      `;
-
-      details.append(name, meta);
-      item.append(image, details);
-      leftColumn.appendChild(item);
+      const item = buildCartItem(product);
+      itemsList.appendChild(item);
     });
+    
+    leftColumn.appendChild(itemsList);
   } else {
     const emptyMsg = document.createElement("p");
     emptyMsg.className = "order-summary-empty";
@@ -171,6 +226,33 @@ function buildOrderSummary(checkoutData, cartData) {
 }
 
 /**
+ * Reset dataLayer to default state and clear cart
+ */
+function resetDataLayer() {
+  const defaultCart = {
+    productCount: 0,
+    products: {},
+    subTotal: 0,
+    total: 0,
+  };
+
+  if (window.updateDataLayer) {
+    window.updateDataLayer({ cart: defaultCart });
+    // eslint-disable-next-line no-console
+    console.log("DataLayer cart reset to default");
+  }
+}
+
+/**
+ * Clear checkout data from localStorage
+ */
+function clearCheckoutData() {
+  localStorage.removeItem("luma_checkout_data");
+  // eslint-disable-next-line no-console
+  console.log("Checkout data cleared from localStorage");
+}
+
+/**
  * Build action buttons
  * @returns {HTMLElement} Buttons container
  */
@@ -191,11 +273,62 @@ function buildButtons() {
   confirmBtn.className = "order-summary-btn order-summary-btn-confirm";
   confirmBtn.textContent = "CONFIRM ORDER";
   confirmBtn.addEventListener("click", () => {
-    navigateToPage("order-confirmation");
+    // Clear cart and checkout data before navigating to confirmation
+    resetDataLayer();
+    clearCheckoutData();
+    
+    // Small delay to ensure dataLayer is updated and cart badge is cleared
+    setTimeout(() => {
+      navigateToPage("order-confirmation");
+    }, 100);
   });
 
   buttonGroup.append(backBtn, confirmBtn);
   return buttonGroup;
+}
+
+/**
+ * Render the order summary
+ * @param {HTMLElement} block - The block element
+ */
+function renderOrderSummary(block) {
+  const checkoutData = loadCheckoutData();
+  const cartData = getCartData();
+
+  const container = block.querySelector(".order-summary-container");
+  if (!container) return;
+
+  // Clear existing content except title
+  const title = container.querySelector(".order-summary-title");
+  container.innerHTML = "";
+  if (title) {
+    container.appendChild(title);
+  } else {
+    const newTitle = document.createElement("h1");
+    newTitle.className = "order-summary-title";
+    newTitle.textContent = "ORDER SUMMARY";
+    container.appendChild(newTitle);
+  }
+
+  const summary = buildOrderSummary(checkoutData, cartData);
+  const buttons = buildButtons();
+
+  container.append(summary, buttons);
+}
+
+/**
+ * Setup dataLayer listener for cart updates
+ * @param {HTMLElement} block - The block element
+ */
+function setupDataLayerListener(block) {
+  document.addEventListener("dataLayerUpdated", (event) => {
+    const { dataLayer } = event.detail;
+    if (dataLayer && dataLayer.cart) {
+      // eslint-disable-next-line no-console
+      console.log("Cart data updated, refreshing order summary");
+      renderOrderSummary(block);
+    }
+  });
 }
 
 /**
@@ -205,21 +338,15 @@ function buildButtons() {
 export default function decorate(block) {
   block.textContent = "";
 
-  const checkoutData = loadCheckoutData();
-  const cartData = getCartData();
-
   const container = document.createElement("div");
   container.className = "order-summary-container";
-
-  const title = document.createElement("h1");
-  title.className = "order-summary-title";
-  title.textContent = "ORDER SUMMARY";
-
-  const summary = buildOrderSummary(checkoutData, cartData);
-  const buttons = buildButtons();
-
-  container.append(title, summary, buttons);
   block.appendChild(container);
+
+  // Initial render
+  renderOrderSummary(block);
+
+  // Setup listener for cart updates
+  setupDataLayerListener(block);
 
   // eslint-disable-next-line no-console
   console.log("Order Summary initialized");

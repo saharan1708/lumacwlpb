@@ -588,13 +588,43 @@ export default async function decorate(block) {
     );
     const targetContainer = contentWrapper || navTools;
 
-    // Add Cart Icon
+    // Add Cart Icon with badge
     const cartLink = document.createElement("a");
     cartLink.href = "/en/cart";
     cartLink.className = "cart-icon";
     cartLink.setAttribute("aria-label", "Shopping Cart");
     cartLink.setAttribute("title", "Shopping Cart");
+
+    // Add cart count badge
+    const cartBadge = document.createElement("span");
+    cartBadge.className = "cart-badge";
+    cartBadge.textContent = "0";
+    cartBadge.style.display = "none"; // Hidden by default
+    cartLink.appendChild(cartBadge);
+
     targetContainer.append(cartLink);
+
+    // Update cart count from dataLayer
+    const updateCartCount = () => {
+      const cartData = window.getDataLayerProperty
+        ? window.getDataLayerProperty("cart")
+        : null;
+      const count = cartData?.productCount || 0;
+
+      if (cartBadge) {
+        cartBadge.textContent = count;
+        cartBadge.style.display = count > 0 ? "flex" : "none";
+        cartLink.setAttribute("aria-label", `Shopping Cart (${count} items)`);
+      }
+    };
+
+    // Initial update
+    updateCartCount();
+
+    // Listen for dataLayer updates
+    document.addEventListener("dataLayerUpdated", () => {
+      updateCartCount();
+    });
 
     // Add Sign In Button
     const signInLink = document.createElement("a");

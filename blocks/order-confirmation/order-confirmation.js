@@ -19,9 +19,11 @@ function resetDataLayer() {
     total: 0,
   };
 
-  window.updateDataLayer({ cart: defaultCart });
-  // eslint-disable-next-line no-console
-  console.log("DataLayer cart reset to default");
+  if (window.updateDataLayer) {
+    window.updateDataLayer({ cart: defaultCart });
+    // eslint-disable-next-line no-console
+    console.log("DataLayer cart reset to default");
+  }
 }
 
 /**
@@ -37,22 +39,7 @@ function clearCheckoutData() {
  * Navigate to home page
  */
 function navigateToHome() {
-  const currentPath = window.location.pathname;
-  const pathParts = currentPath.split("/");
-  
-  // Find the language code in the path
-  const langIndex = pathParts.findIndex((part) =>
-    /^(en|fr|de|es|it|ja|zh|pt|nl|sv|da|no|fi)$/.test(part)
-  );
-
-  if (langIndex !== -1) {
-    // Navigate to /{lang}/
-    const homePath = `/${pathParts.slice(1, langIndex + 1).join("/")}`;
-    window.location.href = homePath;
-  } else {
-    // Fallback to root
-    window.location.href = "/";
-  }
+  window.location.href = "/";
 }
 
 /**
@@ -132,4 +119,3 @@ export default function decorate(block) {
   // eslint-disable-next-line no-console
   console.log("Order Confirmation initialized with order number:", orderNumber);
 }
-

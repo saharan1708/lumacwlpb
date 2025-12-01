@@ -335,6 +335,7 @@ header nav .nav-tools a[href*="cart"] {
     background-color: transparent;
     border-radius: 4px;
     transition: all 0.3s ease;
+    overflow: visible;
 }
 
 header nav .nav-tools .cart-icon::after,
@@ -345,6 +346,31 @@ header nav .nav-tools a[href*="cart"]::after {
 header nav .nav-tools .cart-icon:hover,
 header nav .nav-tools a[href*="cart"]:hover {
     background-color: #e8e8e8;
+}
+
+/* Cart Badge */
+header nav .nav-tools .cart-icon .cart-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    min-width: 18px;
+    height: 18px;
+    background-color: #ff0000;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 4px;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+header nav .nav-tools .cart-icon .cart-badge[style*="display: none"] {
+    display: none !important;
 }
 
 /* Sign In Button */
