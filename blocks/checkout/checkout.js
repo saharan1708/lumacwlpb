@@ -264,7 +264,7 @@ function buildCheckoutForm() {
   if (products.length > 0) {
     const itemsPreview = document.createElement("div");
     itemsPreview.className = "checkout-items-preview";
-    
+
     const itemsTitle = document.createElement("div");
     itemsTitle.className = "checkout-items-title";
     itemsTitle.textContent = `Items (${products.length})`;
@@ -298,7 +298,9 @@ function buildCheckoutForm() {
       itemMeta.className = "checkout-item-meta";
       itemMeta.innerHTML = `
         <span>Qty: ${product.quantity || 1}</span>
-        <span class="checkout-item-price">${formatPrice(product.price * (product.quantity || 1))}</span>
+        <span class="checkout-item-price">${formatPrice(
+          product.price * (product.quantity || 1)
+        )}</span>
       `;
 
       itemDetails.append(itemName, itemMeta);
@@ -408,7 +410,7 @@ function updateSummary(summarySection) {
   if (products.length > 0) {
     const itemsPreview = document.createElement("div");
     itemsPreview.className = "checkout-items-preview";
-    
+
     const itemsTitle = document.createElement("div");
     itemsTitle.className = "checkout-items-title";
     itemsTitle.textContent = `Items (${products.length})`;
@@ -442,7 +444,9 @@ function updateSummary(summarySection) {
       itemMeta.className = "checkout-item-meta";
       itemMeta.innerHTML = `
         <span>Qty: ${product.quantity || 1}</span>
-        <span class="checkout-item-price">${formatPrice(product.price * (product.quantity || 1))}</span>
+        <span class="checkout-item-price">${formatPrice(
+          product.price * (product.quantity || 1)
+        )}</span>
       `;
 
       itemDetails.append(itemName, itemMeta);

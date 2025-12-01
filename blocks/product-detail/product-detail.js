@@ -391,12 +391,9 @@ function buildRecommendations(currentProduct, allProducts, isAuthor) {
   const section = document.createElement("div");
   section.className = "pd-recommendations";
 
-  const header = document.createElement("div");
-  header.className = "pd-rec-header";
   const title = document.createElement("h2");
   title.className = "pd-rec-title";
-  title.textContent = "You May Also Like";
-  header.append(title);
+  title.textContent = "YOU MAY ALSO LIKE";
 
   const grid = document.createElement("div");
   grid.className = "pd-rec-grid";
@@ -406,7 +403,7 @@ function buildRecommendations(currentProduct, allProducts, isAuthor) {
     grid.append(card);
   });
 
-  section.append(header, grid);
+  section.append(title, grid);
 
   // eslint-disable-next-line no-console
   console.log("You May Also Like: Section created successfully");

@@ -112,39 +112,77 @@ function buildTwitterLinks() {
 }
 
 /**
- * Fetches and caches custom events configuration (loads once per session)
+ * Fetches and caches custom events configuration with conditional request support
+ * Uses Last-Modified header to check if config has been updated during the session
  * @returns {Promise<Object|null>} Custom events configuration
  */
 async function loadCustomEventsConfig() {
   const EVENTS_STORAGE_KEY = "luma_customEventsConfig";
+  const EVENTS_LAST_MODIFIED_KEY = "luma_customEventsConfig_lastModified";
 
   try {
-    // Try to get cached configuration from sessionStorage
+    // Try to get cached configuration and last modified timestamp
     const cachedConfig = sessionStorage.getItem(EVENTS_STORAGE_KEY);
+    const cachedLastModified = sessionStorage.getItem(EVENTS_LAST_MODIFIED_KEY);
 
-    if (cachedConfig) {
-      console.log("Custom events config loaded from session cache");
+    // Prepare fetch options with conditional request if we have cached data
+    const fetchOptions = {};
+    if (cachedConfig && cachedLastModified) {
+      // Use If-Modified-Since header for conditional GET request
+      fetchOptions.headers = {
+        "If-Modified-Since": cachedLastModified,
+      };
+      console.log("Checking if custom events config has been modified...");
+    } else {
+      console.log("Fetching custom events config from server...");
+    }
+
+    // Fetch the custom-events.json file (conditional request if cached)
+    const response = await fetch("/custom-events.json", fetchOptions);
+
+    // If 304 Not Modified, return cached config (most efficient - no body transferred)
+    if (response.status === 304) {
+      console.log(
+        "Custom events config loaded from session cache (not modified)"
+      );
       return JSON.parse(cachedConfig);
     }
 
-    // Fetch the custom-events.json file if not cached
-    console.log("Fetching custom events config from server...");
-    const response = await fetch("/custom-events.json");
-
     if (!response.ok) {
+      // If we have cached config, return it as fallback
+      if (cachedConfig) {
+        console.warn("Failed to fetch config, using cached version");
+        return JSON.parse(cachedConfig);
+      }
       console.warn("Custom events configuration not found");
       return null;
     }
 
     const config = await response.json();
+    const lastModified = response.headers.get("Last-Modified");
 
-    // Cache the configuration in sessionStorage
+    // Cache the configuration and Last-Modified timestamp in sessionStorage
     sessionStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(config));
-    console.log("Custom events config cached for session");
+    if (lastModified) {
+      sessionStorage.setItem(EVENTS_LAST_MODIFIED_KEY, lastModified);
+      console.log(
+        `Custom events config cached with Last-Modified: ${lastModified}`
+      );
+    } else {
+      console.log("Custom events config cached for session");
+    }
 
     return config;
   } catch (error) {
     console.error("Error loading custom events config:", error);
+
+    // Return cached config as fallback if available
+    const cachedConfig = sessionStorage.getItem(EVENTS_STORAGE_KEY);
+    if (cachedConfig) {
+      console.log("Using cached config due to error");
+      return JSON.parse(cachedConfig);
+    }
+
     return null;
   }
 }
@@ -509,7 +547,7 @@ window.cleanupCustomEventListeners = cleanupCustomEventListeners;
 if (!window.location.hostname.includes("localhost")) {
   embedCustomLibraries();
   if (!(window.location.href.indexOf("/canvas/") > -1)) {
-   // loadAT();
+    // loadAT();
   }
 }
 

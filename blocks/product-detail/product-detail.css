@@ -331,31 +331,31 @@ main .product-detail .pd-btn-secondary:active {
 main .product-detail .pd-recommendations {
   margin-top: 80px;
   padding-top: 60px;
-  border-top: 1px solid #e9ecef;
-}
-
-main .product-detail .pd-rec-header {
-  margin-bottom: 40px;
-  text-align: center;
+  border-top: 2px solid #e9ecef;
 }
 
 main .product-detail .pd-rec-title {
-  margin: 0;
+  margin: 0 0 40px;
   padding: 0;
   font-size: 2rem;
   font-weight: 400;
   letter-spacing: 0.05em;
+  text-align: center;
   text-transform: uppercase;
   color: #212529;
-  line-height: 1.2;
 }
 
-/* Recommendations Grid */
 main .product-detail .pd-rec-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 32px;
-  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+
+main .product-detail .pd-rec-grid .pd-rec-card {
+  flex: 0 0 calc((100% - 96px) / 5);
+  max-width: 280px;
+  min-width: 220px;
 }
 
 /* Recommendation Card */
@@ -431,22 +431,28 @@ main .product-detail .pd-rec-card-title {
 
 /* Responsive Grid Adjustments */
 @media (width >= 1200px) {
-  main .product-detail .pd-rec-grid {
-    grid-template-columns: repeat(5, 1fr);
+  main .product-detail .pd-rec-grid .pd-rec-card {
+    flex: 0 0 calc((100% - 96px) / 5);
   }
 }
 
 @media (width >= 900px) and (width < 1200px) {
   main .product-detail .pd-rec-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 28px;
+    gap: 20px;
+  }
+
+  main .product-detail .pd-rec-grid .pd-rec-card {
+    flex: 0 0 calc((100% - 60px) / 4);
   }
 }
 
 @media (width >= 600px) and (width < 900px) {
   main .product-detail .pd-rec-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 20px;
+  }
+
+  main .product-detail .pd-rec-grid .pd-rec-card {
+    flex: 0 0 calc((100% - 40px) / 3);
   }
 }
 
@@ -456,42 +462,27 @@ main .product-detail .pd-rec-card-title {
     padding-top: 48px;
   }
 
-  main .product-detail .pd-rec-header {
+  main .product-detail .pd-rec-title {
+    font-size: 1.5rem;
     margin-bottom: 32px;
   }
 
-  main .product-detail .pd-rec-title {
-    font-size: 1.75rem;
-  }
-
   main .product-detail .pd-rec-grid {
-    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
 
-  main .product-detail .pd-rec-card-meta {
-    padding: 16px;
+  main .product-detail .pd-rec-grid .pd-rec-card {
+    flex: 0 0 calc((100% - 20px) / 2);
   }
 }
 
 @media (width <= 480px) {
-  main .product-detail .pd-recommendations {
-    margin-top: 48px;
-    padding-top: 40px;
-  }
-
-  main .product-detail .pd-rec-header {
-    margin-bottom: 28px;
-  }
-
-  main .product-detail .pd-rec-title {
-    font-size: 1.5rem;
-    letter-spacing: 0.03em;
-  }
-
   main .product-detail .pd-rec-grid {
-    grid-template-columns: 1fr;
     gap: 16px;
+  }
+
+  main .product-detail .pd-rec-grid .pd-rec-card {
+    flex: 0 0 100%;
   }
 }
 
