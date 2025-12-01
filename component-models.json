@@ -6584,5 +6584,17 @@
         "rootPath": "/content/dam"
       }
     ]
+  },
+  {
+    "id": "checkout",
+    "fields": []
+  },
+  {
+    "id": "order-summary",
+    "fields": []
+  },
+  {
+    "id": "order-confirmation",
+    "fields": []
   }
 ]

@@ -297,8 +297,10 @@ function handleCheckout() {
   // eslint-disable-next-line no-console
   console.log("Proceeding to checkout with cart:", cartData);
 
-  // TODO: Navigate to checkout page
-  alert(`Proceeding to checkout with ${cartData.productCount} item(s)`);
+  // Navigate to checkout page
+  const currentPath = window.location.pathname;
+  const basePath = currentPath.substring(0, currentPath.lastIndexOf("/"));
+  window.location.href = `${basePath}/checkout`;
 }
 
 /**
