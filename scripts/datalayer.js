@@ -8,6 +8,9 @@ window._dataLayerQueue = window._dataLayerQueue || [];
 window._dataLayerReady = false;
 window._dataLayerUpdating = false;
 
+// Queue for cart operations that occur before dataLayer is ready
+window._cartQueue = window._cartQueue || [];
+
 // Private variable to store the actual dataLayer (will be set by buildCustomDataLayer)
 let _dataLayer = null;
 
@@ -96,6 +99,109 @@ function processDataLayerQueue() {
 }
 
 /**
+ * Process queued cart operations
+ */
+function processCartQueue() {
+  if (window._cartQueue && window._cartQueue.length > 0) {
+    console.log(
+      `Processing ${window._cartQueue.length} queued cart operation(s)`
+    );
+
+    // Process each queued cart operation
+    window._cartQueue.forEach((cartOperation, index) => {
+      console.log(
+        `Applying queued cart operation ${index + 1}:`,
+        cartOperation
+      );
+
+      // Execute the actual add to cart logic
+      executeAddToCart(cartOperation);
+    });
+
+    // Clear the cart queue
+    window._cartQueue = [];
+    console.log("All queued cart operations applied");
+  }
+}
+
+/**
+ * Execute add to cart logic (used by both immediate and queued operations)
+ * @param {Object} productData - Product information to add to cart
+ */
+function executeAddToCart(productData) {
+  if (!_dataLayer) {
+    console.error("DataLayer not available for cart operation");
+    return;
+  }
+
+  // initialize empty cart with products as object
+  let currentCart = {
+    productCount: 0,
+    products: {},
+    subTotal: 0,
+    total: 0,
+  };
+
+  // if cart already exists, use it
+  if (Object.keys(_dataLayer.cart).length > 0) {
+    currentCart = _dataLayer.cart;
+  }
+
+  // Use SKU or ID as the key
+  const productKey = productData.id;
+
+  // Check if product already exists in cart (simple object lookup)
+  if (currentCart.products[productKey]) {
+    // Product exists, increment quantity
+    currentCart.products[productKey].quantity += productData.quantity || 1;
+    currentCart.products[productKey].subTotal =
+      currentCart.products[productKey].quantity *
+      currentCart.products[productKey].price;
+    currentCart.products[productKey].total =
+      currentCart.products[productKey].subTotal;
+  } else {
+    // Add new product to cart as object property
+    currentCart.products[productKey] = {
+      id: productData.id,
+      sku: productData.id,
+      name: productData.name,
+      images: productData.images,
+      category: productData.category,
+      description: productData.description,
+      quantity: productData.quantity || 1,
+      price: productData.price,
+      subTotal: productData.price * (productData.quantity || 1),
+      total: productData.price * (productData.quantity || 1),
+    };
+  }
+
+  // Update cart totals by iterating over object values
+  const productValues = Object.values(currentCart.products);
+  currentCart.productCount = productValues.reduce(
+    (sum, p) => sum + p.quantity,
+    0
+  );
+  currentCart.subTotal = productValues.reduce((sum, p) => sum + p.subTotal, 0);
+  currentCart.total = currentCart.subTotal;
+
+  // Update dataLayer with new cart
+  _dataLayer.cart = currentCart;
+
+  // Persist to sessionStorage
+  sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(_dataLayer));
+
+  console.log("Cart updated:", {
+    productName: productData.name,
+    productKey: productKey,
+    productCount: currentCart.productCount,
+    total: currentCart.total,
+  });
+
+  // Dispatch event
+  dispatchDataLayerEvent("updated");
+}
+
+/**
  * Build and initialize the custom data layer
  * Called by delayed.js after it loads
  */
@@ -168,6 +274,9 @@ export function buildCustomDataLayer() {
 
     // Process any queued updates
     processDataLayerQueue();
+
+    // Process any queued cart operations
+    processCartQueue();
 
     // Dispatch initial event after dataLayer is set up
     setTimeout(() => {
@@ -272,12 +381,42 @@ window.getDataLayerProperty = function (path) {
 };
 
 /**
- * Clear dataLayer and queue
+ * Clear dataLayer and all queues
  */
 window.clearDataLayer = function () {
   window._dataLayerQueue = [];
+  window._cartQueue = [];
   sessionStorage.removeItem(SESSION_STORAGE_KEY);
-  console.log("DataLayer and queue cleared");
+  console.log("DataLayer and all queues cleared");
+};
+
+/**
+ * Add product to cart (queues if dataLayer not ready)
+ * Products stored as object keyed by ID for easy lookup and duplicate prevention
+ * @param {Object} productData - Product information
+ * @param {string} productData.id - Product ID (used as key in cart.products object)
+ * @param {string} productData.name - Product name
+ * @param {string} productData.images - Product image URL
+ * @param {string} productData.category - Product category
+ * @param {string} productData.description - Product description
+ * @param {number} productData.price - Product price
+ * @param {number} productData.quantity - Quantity to add (default: 1)
+ */
+window.addToCart = function (productData) {
+  if (!productData || !productData.id) {
+    console.error("Invalid product data provided to addToCart");
+    return;
+  }
+
+  // Queue if not ready yet
+  if (!window._dataLayerReady || !_dataLayer) {
+    console.log("DataLayer not ready, queuing cart operation:", productData);
+    window._cartQueue.push(productData);
+    return;
+  }
+
+  // Execute immediately if ready
+  executeAddToCart(productData);
 };
 
 /**
@@ -287,7 +426,11 @@ window.clearDataLayer = function () {
 window.getDataLayerQueueStatus = function () {
   return {
     ready: window._dataLayerReady,
-    queueLength: window._dataLayerQueue ? window._dataLayerQueue.length : 0,
-    queue: window._dataLayerQueue || [],
+    dataLayerQueueLength: window._dataLayerQueue
+      ? window._dataLayerQueue.length
+      : 0,
+    cartQueueLength: window._cartQueue ? window._cartQueue.length : 0,
+    dataLayerQueue: window._dataLayerQueue || [],
+    cartQueue: window._cartQueue || [],
   };
 };

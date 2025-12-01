@@ -283,9 +283,33 @@ function buildProductDetail(product, isAuthor) {
   addToCartBtn.textContent = "Add to Cart";
   addToCartBtn.setAttribute("aria-label", `Add ${name} to cart`);
   addToCartBtn.addEventListener("click", () => {
+    const imageUrl = isAuthor ? image?._authorUrl : image?._publishUrl;
+    const formattedCategory =
+      category.length > 0
+        ? category
+            .map((cat) => cat.replace(/^luma:/, "").replace(/\//g, " / "))
+            .join(", ")
+        : "";
+
+    // Use the global addToCart function (handles queuing automatically)
+    window.addToCart({
+      id: id || sku || "",
+      name: name || "",
+      images: imageUrl || "",
+      category: formattedCategory,
+      description: description?.html || description?.markdown || "",
+      price: price || 0,
+      quantity: 1,
+    });
+
     // eslint-disable-next-line no-console
-    console.log("Add to cart:", sku);
-    // TODO: Implement cart functionality
+    console.log("Add to cart triggered:", { product: name, sku: sku });
+
+    // Show visual feedback
+    addToCartBtn.textContent = "Added to Cart ✓";
+    setTimeout(() => {
+      addToCartBtn.textContent = "Add to Cart";
+    }, 2000);
   });
 
   const addToWishlistBtn = document.createElement("button");
