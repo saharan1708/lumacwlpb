@@ -91,15 +91,24 @@ function clearErrors(form) {
 }
 
 /**
- * Get cart summary from dataLayer
- * @returns {Object} Cart summary
+ * Get cart data from dataLayer
+ * @returns {Object} Cart data
  */
-function getCartSummary() {
+function getCartData() {
   const cartData = window.getDataLayerProperty
     ? window.getDataLayerProperty("cart")
     : null;
 
-  return cartData || { productCount: 0, subTotal: 0, total: 0 };
+  return cartData || { productCount: 0, products: {}, subTotal: 0, total: 0 };
+}
+
+/**
+ * Format price as currency
+ * @param {number} amount - Amount to format
+ * @returns {string} Formatted price
+ */
+function formatPrice(amount) {
+  return `$${amount.toFixed(2)}`;
 }
 
 /**
@@ -248,14 +257,66 @@ function buildCheckoutForm() {
   summaryTitle.className = "checkout-section-title";
   summaryTitle.textContent = "Summary";
 
-  const cart = getCartSummary();
+  const cart = getCartData();
+  const products = Object.values(cart.products || {});
 
+  // Cart Items Preview (if any)
+  if (products.length > 0) {
+    const itemsPreview = document.createElement("div");
+    itemsPreview.className = "checkout-items-preview";
+    
+    const itemsTitle = document.createElement("div");
+    itemsTitle.className = "checkout-items-title";
+    itemsTitle.textContent = `Items (${products.length})`;
+    itemsPreview.appendChild(itemsTitle);
+
+    const itemsList = document.createElement("div");
+    itemsList.className = "checkout-items-list";
+
+    products.forEach((product) => {
+      const item = document.createElement("div");
+      item.className = "checkout-item-preview";
+
+      const itemImage = document.createElement("div");
+      itemImage.className = "checkout-item-image";
+      if (product.images) {
+        const img = document.createElement("img");
+        img.src = product.images;
+        img.alt = product.name || "Product";
+        img.loading = "lazy";
+        itemImage.appendChild(img);
+      }
+
+      const itemDetails = document.createElement("div");
+      itemDetails.className = "checkout-item-details";
+
+      const itemName = document.createElement("div");
+      itemName.className = "checkout-item-name";
+      itemName.textContent = product.name || "";
+
+      const itemMeta = document.createElement("div");
+      itemMeta.className = "checkout-item-meta";
+      itemMeta.innerHTML = `
+        <span>Qty: ${product.quantity || 1}</span>
+        <span class="checkout-item-price">${formatPrice(product.price * (product.quantity || 1))}</span>
+      `;
+
+      itemDetails.append(itemName, itemMeta);
+      item.append(itemImage, itemDetails);
+      itemsList.appendChild(item);
+    });
+
+    itemsPreview.appendChild(itemsList);
+    summarySection.appendChild(itemsPreview);
+  }
+
+  // Price Summary
   const summaryContent = document.createElement("div");
   summaryContent.className = "checkout-summary-content";
   summaryContent.innerHTML = `
     <div class="checkout-summary-row">
       <span>Subtotal</span>
-      <span>$${cart.subTotal?.toFixed(2) || "0.00"}</span>
+      <span>${formatPrice(cart.subTotal || 0)}</span>
     </div>
     <div class="checkout-summary-row">
       <span>Shipping</span>
@@ -267,7 +328,7 @@ function buildCheckoutForm() {
     </div>
     <div class="checkout-summary-row checkout-summary-total">
       <span>Total</span>
-      <span>$${cart.total?.toFixed(2) || "0.00"}</span>
+      <span>${formatPrice(cart.total || 0)}</span>
     </div>
   `;
 
@@ -329,6 +390,111 @@ function buildCheckoutForm() {
 }
 
 /**
+ * Update summary section with current cart data
+ * @param {HTMLElement} summarySection - Summary section element
+ */
+function updateSummary(summarySection) {
+  const cart = getCartData();
+  const products = Object.values(cart.products || {});
+
+  // Clear existing content (except title)
+  const title = summarySection.querySelector(".checkout-section-title");
+  summarySection.innerHTML = "";
+  if (title) {
+    summarySection.appendChild(title);
+  }
+
+  // Rebuild items preview
+  if (products.length > 0) {
+    const itemsPreview = document.createElement("div");
+    itemsPreview.className = "checkout-items-preview";
+    
+    const itemsTitle = document.createElement("div");
+    itemsTitle.className = "checkout-items-title";
+    itemsTitle.textContent = `Items (${products.length})`;
+    itemsPreview.appendChild(itemsTitle);
+
+    const itemsList = document.createElement("div");
+    itemsList.className = "checkout-items-list";
+
+    products.forEach((product) => {
+      const item = document.createElement("div");
+      item.className = "checkout-item-preview";
+
+      const itemImage = document.createElement("div");
+      itemImage.className = "checkout-item-image";
+      if (product.images) {
+        const img = document.createElement("img");
+        img.src = product.images;
+        img.alt = product.name || "Product";
+        img.loading = "lazy";
+        itemImage.appendChild(img);
+      }
+
+      const itemDetails = document.createElement("div");
+      itemDetails.className = "checkout-item-details";
+
+      const itemName = document.createElement("div");
+      itemName.className = "checkout-item-name";
+      itemName.textContent = product.name || "";
+
+      const itemMeta = document.createElement("div");
+      itemMeta.className = "checkout-item-meta";
+      itemMeta.innerHTML = `
+        <span>Qty: ${product.quantity || 1}</span>
+        <span class="checkout-item-price">${formatPrice(product.price * (product.quantity || 1))}</span>
+      `;
+
+      itemDetails.append(itemName, itemMeta);
+      item.append(itemImage, itemDetails);
+      itemsList.appendChild(item);
+    });
+
+    itemsPreview.appendChild(itemsList);
+    summarySection.appendChild(itemsPreview);
+  }
+
+  // Rebuild price summary
+  const summaryContent = document.createElement("div");
+  summaryContent.className = "checkout-summary-content";
+  summaryContent.innerHTML = `
+    <div class="checkout-summary-row">
+      <span>Subtotal</span>
+      <span>${formatPrice(cart.subTotal || 0)}</span>
+    </div>
+    <div class="checkout-summary-row">
+      <span>Shipping</span>
+      <span>---</span>
+    </div>
+    <div class="checkout-summary-row">
+      <span>Discount</span>
+      <span>----</span>
+    </div>
+    <div class="checkout-summary-row checkout-summary-total">
+      <span>Total</span>
+      <span>${formatPrice(cart.total || 0)}</span>
+    </div>
+  `;
+
+  summarySection.appendChild(summaryContent);
+}
+
+/**
+ * Setup dataLayer listener for cart updates
+ * @param {HTMLElement} summarySection - Summary section element
+ */
+function setupDataLayerListener(summarySection) {
+  document.addEventListener("dataLayerUpdated", (event) => {
+    const { dataLayer } = event.detail;
+    if (dataLayer && dataLayer.cart) {
+      // eslint-disable-next-line no-console
+      console.log("Cart data updated, refreshing checkout summary");
+      updateSummary(summarySection);
+    }
+  });
+}
+
+/**
  * Decorate the checkout block
  * @param {HTMLElement} block - The block element
  */
@@ -346,6 +512,12 @@ export default function decorate(block) {
 
   container.append(title, form);
   block.appendChild(container);
+
+  // Setup listener for cart updates
+  const summarySection = form.querySelector(".checkout-summary");
+  if (summarySection) {
+    setupDataLayerListener(summarySection);
+  }
 
   // eslint-disable-next-line no-console
   console.log("Checkout page initialized");

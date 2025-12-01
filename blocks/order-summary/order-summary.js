@@ -72,7 +72,10 @@ function buildCartItem(product) {
   if (product.category) {
     const category = document.createElement("p");
     category.className = "order-summary-item-category";
-    category.textContent = product.category.replace(/luma:|lumaproducts:/g, "").replace(/\//g, " / ").replace(/\b\w/g, (l) => l.toUpperCase());
+    category.textContent = product.category
+      .replace(/luma:|lumaproducts:/g, "")
+      .replace(/\//g, " / ")
+      .replace(/\b\w/g, (l) => l.toUpperCase());
     details.appendChild(category);
   }
 
@@ -82,29 +85,31 @@ function buildCartItem(product) {
   if (product.size || product.color) {
     const attributes = document.createElement("div");
     attributes.className = "order-summary-item-attributes";
-    
+
     if (product.size) {
       const size = document.createElement("span");
       size.textContent = `Size: ${product.size}`;
       attributes.appendChild(size);
     }
-    
+
     if (product.color) {
       const color = document.createElement("span");
       color.textContent = `Color: ${product.color}`;
       attributes.appendChild(color);
     }
-    
+
     details.appendChild(attributes);
   }
 
   // Price and Quantity
   const priceQty = document.createElement("div");
   priceQty.className = "order-summary-item-price-qty";
-  
+
   const qtyDisplay = document.createElement("div");
   qtyDisplay.className = "order-summary-item-qty-display";
-  qtyDisplay.innerHTML = `<span>Qty:</span> <strong>${product.quantity || 1}</strong>`;
+  qtyDisplay.innerHTML = `<span>Qty:</span> <strong>${
+    product.quantity || 1
+  }</strong>`;
 
   const price = document.createElement("div");
   price.className = "order-summary-item-price";
@@ -141,12 +146,12 @@ function buildOrderSummary(checkoutData, cartData) {
 
     const itemsList = document.createElement("div");
     itemsList.className = "order-summary-items-list";
-    
+
     products.forEach((product) => {
       const item = buildCartItem(product);
       itemsList.appendChild(item);
     });
-    
+
     leftColumn.appendChild(itemsList);
   } else {
     const emptyMsg = document.createElement("p");
@@ -237,7 +242,7 @@ function resetDataLayer() {
   };
 
   if (window.updateDataLayer) {
-    window.updateDataLayer({ cart: defaultCart });
+    window.updateDataLayer({ cart: defaultCart, product: null }, false);
     // eslint-disable-next-line no-console
     console.log("DataLayer cart reset to default");
   }
@@ -276,7 +281,7 @@ function buildButtons() {
     // Clear cart and checkout data before navigating to confirmation
     resetDataLayer();
     clearCheckoutData();
-    
+
     // Small delay to ensure dataLayer is updated and cart badge is cleared
     setTimeout(() => {
       navigateToPage("order-confirmation");
@@ -351,4 +356,3 @@ export default function decorate(block) {
   // eslint-disable-next-line no-console
   console.log("Order Summary initialized");
 }
-
