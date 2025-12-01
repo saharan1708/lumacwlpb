@@ -6571,5 +6571,9 @@
         "description": "Main heading for the membership form"
       }
     ]
+  },
+  {
+    "id": "cart",
+    "fields": []
   }
 ]

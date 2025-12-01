@@ -1,9 +1,7 @@
 [
   {
     "id": "main",
-    "components": [
-      "section"
-    ]
+    "components": ["section"]
   },
   {
     "id": "section",
@@ -25,6 +23,7 @@
       "category-products-lister",
       "new-arrival",
       "product-detail",
+      "cart",
       "image",
       "teaser",
       "text",
@@ -40,27 +39,19 @@
   },
   {
     "id": "accordion",
-    "components": [
-      "accordion-item"
-    ]
+    "components": ["accordion-item"]
   },
   {
     "id": "cards",
-    "components": [
-      "card"
-    ]
+    "components": ["card"]
   },
   {
     "id": "carousel",
-    "components": [
-      "card"
-    ]
+    "components": ["card"]
   },
   {
     "id": "columns",
-    "components": [
-      "column"
-    ]
+    "components": ["column"]
   },
   {
     "id": "column",
@@ -69,7 +60,7 @@
       "dm-asset",
       "dm-template",
       "image",
-      "text",      
+      "text",
       "title",
       "video",
       "separator"
