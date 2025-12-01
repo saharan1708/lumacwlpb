@@ -15,18 +15,20 @@ import {
   getMetadata,
   loadScript,
   toClassName,
-  toCamelCase
-} from './aem.js';
-import { picture, source, img } from './dom-helpers.js';
+  toCamelCase,
+} from "./aem.js";
+import { picture, source, img } from "./dom-helpers.js";
 
 import {
   getLanguage,
   formatDate,
   setPageLanguage,
   PATH_PREFIX,
-  createSource
-} from './utils.js';
+  createSource,
+} from "./utils.js";
 
+// Import dataLayer management (available immediately)
+import "./datalayer.js";
 
 /**
  * Moves all the attributes from a given elmenet to another given element.
@@ -48,9 +50,9 @@ export function moveAttributes(from, to, attributes) {
 }
 
 export function isAuthorEnvironment() {
-  if(window?.location?.origin?.includes('author')){
+  if (window?.location?.origin?.includes("author")) {
     return true;
-  }else{
+  } else {
     return false;
   }
   /*
@@ -71,7 +73,10 @@ export function moveInstrumentation(from, to) {
     to,
     [...from.attributes]
       .map(({ nodeName }) => nodeName)
-      .filter((attr) => attr.startsWith('data-aue-') || attr.startsWith('data-richtext-')),
+      .filter(
+        (attr) =>
+          attr.startsWith("data-aue-") || attr.startsWith("data-richtext-")
+      )
   );
 }
 
@@ -81,7 +86,8 @@ export function moveInstrumentation(from, to) {
 async function loadFonts() {
   await loadCSS(`${window.hlx.codeBasePath}/styles/fonts.css`);
   try {
-    if (!window.location.hostname.includes('localhost')) sessionStorage.setItem('fonts-loaded', 'true');
+    if (!window.location.hostname.includes("localhost"))
+      sessionStorage.setItem("fonts-loaded", "true");
   } catch (e) {
     // do nothing
   }
@@ -98,13 +104,16 @@ export async function fetchLanguagePlaceholders() {
     return await fetchPlaceholders(`${PATH_PREFIX}/${langCode}`);
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error(`Error fetching placeholders for lang: ${langCode}. Will try to get en placeholders`, error);
+    console.error(
+      `Error fetching placeholders for lang: ${langCode}. Will try to get en placeholders`,
+      error
+    );
     // Retry without specifying a language (using the default language)
     try {
       return await fetchPlaceholders(`${PATH_PREFIX}/en`);
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error('Error fetching placeholders:', err);
+      console.error("Error fetching placeholders:", err);
     }
   }
   return {}; // default to empty object
@@ -119,7 +128,7 @@ function buildAutoBlocks() {
     // TODO: add auto block, if needed
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Auto Blocking failed', error);
+    console.error("Auto Blocking failed", error);
   }
 }
 
@@ -128,21 +137,26 @@ function buildAutoBlocks() {
  * @param {Element} main The container element
  */
 function decorateButtons(main) {
-  main.querySelectorAll('img').forEach((img) => {
+  main.querySelectorAll("img").forEach((img) => {
     let altT = decodeURIComponent(img.alt);
 
-    if (altT && altT.includes('https://delivery-')) {
+    if (altT && altT.includes("https://delivery-")) {
       try {
         altT = JSON.parse(altT);
         const { altText, deliveryUrl } = altT;
         const url = new URL(deliveryUrl);
-        const imgName = url.pathname.substring(url.pathname.lastIndexOf('/') + 1);
+        const imgName = url.pathname.substring(
+          url.pathname.lastIndexOf("/") + 1
+        );
         const block = whatBlockIsThis(img);
         const bp = getMetadata(block);
-        let breakpoints = [{ media: '(min-width: 600px)', width: '2000' }, { width: '750' }];
+        let breakpoints = [
+          { media: "(min-width: 600px)", width: "2000" },
+          { width: "750" },
+        ];
         if (bp) {
-          const bps = bp.split('|');
-          const bpS = bps.map((b) => b.split(',').map((p) => p.trim()));
+          const bps = bp.split("|");
+          const bpS = bps.map((b) => b.split(",").map((p) => p.trim()));
           breakpoints = bpS.map((n) => {
             const obj = {};
             n.forEach((i) => {
@@ -152,23 +166,26 @@ function decorateButtons(main) {
             return obj;
           });
         } else {
-          const format = getMetadata(imgName.toLowerCase().replace('.', '-'));
-          const formats = format.split('|');
+          const format = getMetadata(imgName.toLowerCase().replace(".", "-"));
+          const formats = format.split("|");
           const formatObj = {};
           formats.forEach((i) => {
-            const [a, b] = i.split('=');
+            const [a, b] = i.split("=");
             formatObj[a] = b;
           });
-          breakpoints = breakpoints.map((n) => (
-            { ...n, ...formatObj }
-          ));
+          breakpoints = breakpoints.map((n) => ({ ...n, ...formatObj }));
         }
-        const picture = createOptimizedPicture(deliveryUrl, altText, false, breakpoints);
+        const picture = createOptimizedPicture(
+          deliveryUrl,
+          altText,
+          false,
+          breakpoints
+        );
         img.parentElement.replaceWith(picture);
       } catch (error) {
-        img.setAttribute('style', 'border:5px solid red');
-        img.setAttribute('data-asset-type', 'video');
-        img.setAttribute('title', 'Update block to render video.');
+        img.setAttribute("style", "border:5px solid red");
+        img.setAttribute("data-asset-type", "video");
+        img.setAttribute("title", "Update block to render video.");
       }
     }
   });
@@ -190,24 +207,22 @@ export function decorateMain(main) {
   decorateDMImages(main);
 }
 
-
 async function renderWBDataLayer() {
-  
   //const config = await fetchPlaceholders();
-  const lastPubDateStr = getMetadata('published-time');
-  const firstPubDateStr = getMetadata('content_date') || lastPubDateStr;
+  const lastPubDateStr = getMetadata("published-time");
+  const firstPubDateStr = getMetadata("content_date") || lastPubDateStr;
   window.wbgData.page = {
     pageInfo: {
-      pageCategory: getMetadata('pagecategory'),
-      channel: getMetadata('channel'),
-      themecfreference: getMetadata('theme_cf_reference'),
-      contentType: getMetadata('content_type'),
-      pageUid: getMetadata('pageuid'),
-      pageName: getMetadata('pagename'),
-      hostName: getMetadata('hostname'),
+      pageCategory: getMetadata("pagecategory"),
+      channel: getMetadata("channel"),
+      themecfreference: getMetadata("theme_cf_reference"),
+      contentType: getMetadata("content_type"),
+      pageUid: getMetadata("pageuid"),
+      pageName: getMetadata("pagename"),
+      hostName: getMetadata("hostname"),
       pageFirstPub: formatDate(firstPubDateStr),
       pageLastMod: formatDate(lastPubDateStr),
-      webpackage: '',
+      webpackage: "",
     },
   };
 }
@@ -220,16 +235,16 @@ async function loadEager(doc) {
   setPageLanguage();
   decorateTemplateAndTheme();
   renderWBDataLayer();
-  const main = doc.querySelector('main');
+  const main = doc.querySelector("main");
   if (main) {
     decorateMain(main);
-    document.body.classList.add('appear');
-    await loadSection(main.querySelector('.section'), waitForFirstImage);
+    document.body.classList.add("appear");
+    await loadSection(main.querySelector(".section"), waitForFirstImage);
   }
 
   try {
     /* if desktop (proxy for fast connection) or fonts already loaded, load fonts.css */
-    if (window.innerWidth >= 900 || sessionStorage.getItem('fonts-loaded')) {
+    if (window.innerWidth >= 900 || sessionStorage.getItem("fonts-loaded")) {
       loadFonts();
     }
   } catch (e) {
@@ -286,20 +301,19 @@ async function loadEager(doc) {
  * @param {Element} doc The container element
  */
 async function loadLazy(doc) {
-  const main = doc.querySelector('main');
+  const main = doc.querySelector("main");
   await loadSections(main);
   //decorateSectionImages(doc);
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
   if (hash && element) element.scrollIntoView();
   //decorateSectionImages(doc);
-  loadHeader(doc.querySelector('header'));
-  loadFooter(doc.querySelector('footer'));
+  loadHeader(doc.querySelector("header"));
+  loadFooter(doc.querySelector("footer"));
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
   loadFonts();
 }
-
 
 /**
  * Decorates Dynamic Media images by modifying their URLs to include specific parameters
@@ -309,65 +323,97 @@ async function loadLazy(doc) {
  */
 export function decorateDMImages(main) {
   main.querySelectorAll('a[href^="https://delivery-p"]').forEach((a) => {
-    const url = new URL(a.href.split('?')[0]);
-    if (url.hostname.endsWith('.adobeaemcloud.com')) {
-
-        const blockBeingDecorated = whatBlockIsThis(a);
-        let blockName = '';
-        let rotate = '';
-        let flip = '';
-        let crop = '';
-        if(blockBeingDecorated){
-            blockName = Array.from(blockBeingDecorated.classList).find(className => className !== 'block');
-        }
-        if(blockName && blockName === 'dynamicmedia-image'){
-          rotate = blockBeingDecorated?.children[3]?.textContent?.trim();
-          flip = blockBeingDecorated?.children[4]?.textContent?.trim();
-          crop = blockBeingDecorated?.children[5]?.textContent?.trim();
-        }
-
-        const uuidPattern = /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i;
-        const match = url.href?.match(uuidPattern);
-        let aliasname = '';
-        if (!match) {
-            throw new Error('No asset UUID found in URL');
-        }else{
-          aliasname = match[1];
-        }
-        let hrefWOExtn =  url.href?.substring(0, url.href?.lastIndexOf('.'))?.replace(/\/original\/(?=as\/)/, '/');
-        const pictureEl = picture(
-          source({ 
-              srcset: `${hrefWOExtn}.webp?width=1400&quality=85&preferwebp=true${rotate ? '&rotate=' + rotate : ''}${flip ? '&flip=' + flip.toLowerCase() : ''}${crop ? '&crop=' + crop.toLowerCase() : ''}`, 
-              type: 'image/webp', 
-              media: '(min-width: 992px)' 
-          }),
-          source({ 
-              srcset: `${hrefWOExtn}.webp?width=1320&quality=85&preferwebp=true${rotate ? '&rotate=' + rotate : ''}${flip ? '&flip=' + flip.toLowerCase() : ''}${crop ? '&crop=' + crop.toLowerCase() : ''}`, 
-              type: 'image/webp', 
-              media: '(min-width: 768px)' 
-          }),
-          source({ 
-              srcset: `${hrefWOExtn}.webp?width=780&quality=85&preferwebp=true${rotate ? '&rotate=' + rotate : ''}${flip ? '&flip=' + flip.toLowerCase() : ''}${crop ? '&crop=' + crop.toLowerCase() : ''}`, 
-              type: 'image/webp', 
-              media: '(min-width: 320px)' 
-          }),
-          source({ 
-              srcset: `${hrefWOExtn}.webp?width=1400&quality=85${rotate ? '&rotate=' + rotate : ''}${flip ? '&flip=' + flip.toLowerCase() : ''}${crop ? '&crop=' + crop.toLowerCase() : ''}`, 
-              media: '(min-width: 992px)' 
-          }),
-          source({ 
-              srcset: `${hrefWOExtn}.webp?width=1320&quality=85${rotate ? '&rotate=' + rotate : ''}${flip ? '&flip=' + flip.toLowerCase() : ''}${crop ? '&crop=' + crop.toLowerCase() : ''}`, 
-              media: '(min-width: 768px)' 
-          }),
-          source({ 
-              srcset: `${hrefWOExtn}.webp?width=780&quality=85${rotate ? '&rotate=' + rotate : ''}${flip ? '&flip=' + flip.toLowerCase() : ''}${crop ? '&crop=' + crop.toLowerCase() : ''}`, 
-              media: '(min-width: 320px)' 
-          }),
-          img({ 
-              src: `${hrefWOExtn}.webp?width=1400&quality=85${rotate ? '&rotate=' + rotate : ''}${flip ? '&flip=' + flip.toLowerCase() : ''}${crop ? '&crop=' + crop.toLowerCase() : ''}`, 
-              alt: a.innerText 
-          }),
+    const url = new URL(a.href.split("?")[0]);
+    if (url.hostname.endsWith(".adobeaemcloud.com")) {
+      const blockBeingDecorated = whatBlockIsThis(a);
+      let blockName = "";
+      let rotate = "";
+      let flip = "";
+      let crop = "";
+      if (blockBeingDecorated) {
+        blockName = Array.from(blockBeingDecorated.classList).find(
+          (className) => className !== "block"
         );
+      }
+      if (blockName && blockName === "dynamicmedia-image") {
+        rotate = blockBeingDecorated?.children[3]?.textContent?.trim();
+        flip = blockBeingDecorated?.children[4]?.textContent?.trim();
+        crop = blockBeingDecorated?.children[5]?.textContent?.trim();
+      }
+
+      const uuidPattern =
+        /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i;
+      const match = url.href?.match(uuidPattern);
+      let aliasname = "";
+      if (!match) {
+        throw new Error("No asset UUID found in URL");
+      } else {
+        aliasname = match[1];
+      }
+      let hrefWOExtn = url.href
+        ?.substring(0, url.href?.lastIndexOf("."))
+        ?.replace(/\/original\/(?=as\/)/, "/");
+      const pictureEl = picture(
+        source({
+          srcset: `${hrefWOExtn}.webp?width=1400&quality=85&preferwebp=true${
+            rotate ? "&rotate=" + rotate : ""
+          }${flip ? "&flip=" + flip.toLowerCase() : ""}${
+            crop ? "&crop=" + crop.toLowerCase() : ""
+          }`,
+          type: "image/webp",
+          media: "(min-width: 992px)",
+        }),
+        source({
+          srcset: `${hrefWOExtn}.webp?width=1320&quality=85&preferwebp=true${
+            rotate ? "&rotate=" + rotate : ""
+          }${flip ? "&flip=" + flip.toLowerCase() : ""}${
+            crop ? "&crop=" + crop.toLowerCase() : ""
+          }`,
+          type: "image/webp",
+          media: "(min-width: 768px)",
+        }),
+        source({
+          srcset: `${hrefWOExtn}.webp?width=780&quality=85&preferwebp=true${
+            rotate ? "&rotate=" + rotate : ""
+          }${flip ? "&flip=" + flip.toLowerCase() : ""}${
+            crop ? "&crop=" + crop.toLowerCase() : ""
+          }`,
+          type: "image/webp",
+          media: "(min-width: 320px)",
+        }),
+        source({
+          srcset: `${hrefWOExtn}.webp?width=1400&quality=85${
+            rotate ? "&rotate=" + rotate : ""
+          }${flip ? "&flip=" + flip.toLowerCase() : ""}${
+            crop ? "&crop=" + crop.toLowerCase() : ""
+          }`,
+          media: "(min-width: 992px)",
+        }),
+        source({
+          srcset: `${hrefWOExtn}.webp?width=1320&quality=85${
+            rotate ? "&rotate=" + rotate : ""
+          }${flip ? "&flip=" + flip.toLowerCase() : ""}${
+            crop ? "&crop=" + crop.toLowerCase() : ""
+          }`,
+          media: "(min-width: 768px)",
+        }),
+        source({
+          srcset: `${hrefWOExtn}.webp?width=780&quality=85${
+            rotate ? "&rotate=" + rotate : ""
+          }${flip ? "&flip=" + flip.toLowerCase() : ""}${
+            crop ? "&crop=" + crop.toLowerCase() : ""
+          }`,
+          media: "(min-width: 320px)",
+        }),
+        img({
+          src: `${hrefWOExtn}.webp?width=1400&quality=85${
+            rotate ? "&rotate=" + rotate : ""
+          }${flip ? "&flip=" + flip.toLowerCase() : ""}${
+            crop ? "&crop=" + crop.toLowerCase() : ""
+          }`,
+          alt: a.innerText,
+        })
+      );
       a.replaceWith(pictureEl);
     }
   });
@@ -377,7 +423,8 @@ function whatBlockIsThis(element) {
   let currentElement = element;
 
   while (currentElement.parentElement) {
-    if (currentElement.parentElement.classList.contains('block')) return currentElement.parentElement;
+    if (currentElement.parentElement.classList.contains("block"))
+      return currentElement.parentElement;
     currentElement = currentElement.parentElement;
     if (currentElement.classList.length > 0) return currentElement.classList[0];
   }
@@ -389,10 +436,10 @@ function whatBlockIsThis(element) {
  * @param {Element} main The container element
  */
 function adjustAutoImages(main) {
-  const pictureElement = main.querySelector('div > p > picture');
+  const pictureElement = main.querySelector("div > p > picture");
   if (pictureElement) {
     const pElement = pictureElement.parentElement;
-    pElement.className = 'auto-image-container';
+    pElement.className = "auto-image-container";
   }
 }
 
@@ -402,7 +449,7 @@ function adjustAutoImages(main) {
  */
 function loadDelayed() {
   // eslint-disable-next-line import/no-cycle
-  window.setTimeout(() => import('./delayed.js'), 3000);
+  window.setTimeout(() => import("./delayed.js"), 3000);
   // load anything that can be postponed to the latest here
 }
 
