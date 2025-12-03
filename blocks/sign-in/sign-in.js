@@ -161,62 +161,6 @@ function attachSignInHandler(block) {
 
     // Sign-in successful - Load user data from registration
     try {
-      const registrationData = localStorage.getItem("luma_registered_user");
-      let userData = null;
-
-      if (registrationData) {
-        userData = JSON.parse(registrationData);
-      }
-
-      // Update dataLayer with user information
-      if (window.updateDataLayer && userData) {
-        window.updateDataLayer({
-          name: {
-            firstName: userData.firstName || "",
-            lastName: userData.lastName || "",
-          },
-          personalEmail: {
-            address: userData.email || enteredEmail,
-          },
-          mobilePhone: {
-            number: userData.phone || "",
-          },
-          homeAddress: {
-            street1: userData.address || "",
-            city: userData.city || "",
-            postalCode: userData.zip || "",
-          },
-          person: {
-            gender: userData.gender || "",
-            birthDayAndMonth: userData.dob || "",
-            loyaltyConsent:
-              userData.loyalty === "true" || userData.loyalty === true,
-          },
-          individualCharacteristics: {
-            shoeSize: userData.shoeSize || "",
-            shirtSize: userData.shirtSize || "",
-            favoriteColor: userData.favoriteColor || "",
-          },
-          marketing: {
-            email: {
-              val:
-                Array.isArray(userData.commPrefs) &&
-                userData.commPrefs.includes("email"),
-            },
-            call: {
-              val:
-                Array.isArray(userData.commPrefs) &&
-                userData.commPrefs.includes("phone"),
-            },
-            sms: {
-              val:
-                Array.isArray(userData.commPrefs) &&
-                userData.commPrefs.includes("sms"),
-            },
-          },
-        });
-      }
-
       // Set authentication flag in localStorage
       localStorage.setItem("luma_user_logged_in", "true");
 

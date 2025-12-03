@@ -259,13 +259,25 @@ function attachFormSubmitHandler(block) {
       };
 
       localStorage.setItem(
+        "com.adobe.reactor.dataElements.Identities",
+        JSON.stringify({
+          Email: [
+            {
+              id: registrationData.email,
+              primary: true,
+              authenticatedState: "authenticated",
+            },
+          ],
+        })
+      );
+
+      localStorage.setItem(
         "luma_registered_user",
         JSON.stringify(registrationData)
       );
 
       // Dispatch registration success event
-      const registrationEvent = new CustomEvent("user-registered", {
-        detail: registrationData,
+      const registrationEvent = new CustomEvent("registration", {
         bubbles: true,
       });
       document.dispatchEvent(registrationEvent);
