@@ -49,8 +49,6 @@ async function fetchProductDetail(path, sku, isAuthor) {
 async function fetchAllProducts(path, isAuthor) {
   try {
     if (!path) {
-      // eslint-disable-next-line no-console
-      console.log("You May Also Like: No path provided");
       return [];
     }
     const baseUrl = isAuthor
@@ -58,16 +56,10 @@ async function fetchAllProducts(path, isAuthor) {
       : "https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGraphQl";
     // Use the same query as category-products-lister which we know works
     const url = `${baseUrl}/graphql/execute.json/luma3/menproductspagelister?_path=${path}`;
-    // eslint-disable-next-line no-console
-    console.log("You May Also Like: Fetching from URL:", url);
     const resp = await fetch(url, { method: "GET" });
     const json = await resp.json();
-    // eslint-disable-next-line no-console
-    console.log("You May Also Like: GraphQL response:", json);
     const items = json?.data?.productsModelList?.items || [];
     const filtered = items.filter((item) => item && item.sku);
-    // eslint-disable-next-line no-console
-    console.log("You May Also Like: All products fetched:", filtered.length);
     return filtered;
   } catch (e) {
     // eslint-disable-next-line no-console
@@ -200,8 +192,6 @@ function buildProductDetail(product, isAuthor) {
 
   if (typeof window.updateDataLayer === "function") {
     window.updateDataLayer({ product: productData });
-    // eslint-disable-next-line no-console
-    console.log("✓ Product data sent to dataLayer:", productData);
   } else {
     // eslint-disable-next-line no-console
     console.warn(
@@ -308,9 +298,6 @@ function buildProductDetail(product, isAuthor) {
       quantity: 1,
     });
 
-    // eslint-disable-next-line no-console
-    console.log("Add to cart triggered:", { product: name, sku: sku });
-
     // Show visual feedback
     addToCartBtn.textContent = "Added to Cart ✓";
     setTimeout(() => {
@@ -323,8 +310,6 @@ function buildProductDetail(product, isAuthor) {
   addToWishlistBtn.textContent = "Add to Wishlist";
   addToWishlistBtn.setAttribute("aria-label", `Add ${name} to wishlist`);
   addToWishlistBtn.addEventListener("click", () => {
-    // eslint-disable-next-line no-console
-    console.log("Add to wishlist:", sku);
     // TODO: Implement wishlist functionality
   });
 
@@ -345,22 +330,7 @@ function buildProductDetail(product, isAuthor) {
 function buildRecommendations(currentProduct, allProducts, isAuthor) {
   const { sku: currentSku, category: currentCategories = [] } = currentProduct;
 
-  // eslint-disable-next-line no-console
-  console.log("You May Also Like: Current product SKU:", currentSku);
-  // eslint-disable-next-line no-console
-  console.log(
-    "You May Also Like: Current product categories:",
-    currentCategories
-  );
-  // eslint-disable-next-line no-console
-  console.log(
-    "You May Also Like: Total products available:",
-    allProducts.length
-  );
-
   if (!currentCategories || currentCategories.length === 0) {
-    // eslint-disable-next-line no-console
-    console.log("You May Also Like: No categories found for current product");
     return null;
   }
 
@@ -376,20 +346,7 @@ function buildRecommendations(currentProduct, allProducts, isAuthor) {
     })
     .slice(0, 5); // Limit to 5 products
 
-  // eslint-disable-next-line no-console
-  console.log(
-    "You May Also Like: Filtered recommendations:",
-    recommendations.length
-  );
-  // eslint-disable-next-line no-console
-  console.log(
-    "You May Also Like: Recommended products:",
-    recommendations.map((p) => ({ sku: p.sku, category: p.category }))
-  );
-
   if (recommendations.length === 0) {
-    // eslint-disable-next-line no-console
-    console.log("You May Also Like: No matching recommendations found");
     return null;
   }
 
@@ -411,8 +368,6 @@ function buildRecommendations(currentProduct, allProducts, isAuthor) {
 
   section.append(title, grid);
 
-  // eslint-disable-next-line no-console
-  console.log("You May Also Like: Section created successfully");
   return section;
 }
 
@@ -487,17 +442,9 @@ export default async function decorate(block) {
   const productDetail = buildProductDetail(product, isAuthor);
   block.appendChild(productDetail);
 
-  // eslint-disable-next-line no-console
-  console.log("You May Also Like: Building recommendations...");
-
   // Display recommendations
   const recommendations = buildRecommendations(product, allProducts, isAuthor);
   if (recommendations) {
-    // eslint-disable-next-line no-console
-    console.log("You May Also Like: Appending recommendations to page");
     block.appendChild(recommendations);
-  } else {
-    // eslint-disable-next-line no-console
-    console.log("You May Also Like: No recommendations to display");
   }
 }

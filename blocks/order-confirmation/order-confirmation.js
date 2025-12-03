@@ -84,7 +84,4 @@ export default function decorate(block) {
 
   container.appendChild(content);
   block.appendChild(container);
-
-  // eslint-disable-next-line no-console
-  console.log("Order Confirmation initialized with order number:", orderNumber);
 }

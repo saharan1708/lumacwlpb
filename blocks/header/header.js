@@ -628,7 +628,7 @@ export default async function decorate(block) {
 
     // Add Sign In Button
     const signInLink = document.createElement("a");
-    signInLink.href = "/signin";
+    signInLink.href = "/en/sign-in";
     signInLink.className = "sign-in-btn";
     signInLink.textContent = "SIGN IN";
     signInLink.setAttribute("aria-label", "Sign In");

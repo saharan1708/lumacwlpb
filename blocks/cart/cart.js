@@ -65,9 +65,6 @@ function removeFromCart(productId, block) {
     // Refresh cart display
     renderCartItems(block, currentCart);
     updateCartTotals(block, currentCart);
-
-    // eslint-disable-next-line no-console
-    console.log("Product removed from cart:", productId);
   }
 }
 
@@ -126,9 +123,6 @@ function updateQuantity(productId, newQuantity, block) {
         );
       }
     }
-
-    // eslint-disable-next-line no-console
-    console.log("Cart quantity updated:", { productId, quantity });
   }
 }
 
@@ -235,8 +229,6 @@ function renderCartItems(block, cartData) {
   const productValues = Object.values(products);
   const isEmpty = productValues.length === 0;
 
-  console.log(`Rendering ${productValues.length} cart item(s)`);
-
   // Hide/show cart summary based on cart state
   const cartSummary = block.querySelector(".cart-summary");
   if (cartSummary) {
@@ -303,9 +295,6 @@ function renderCartItems(block, cartData) {
  * @param {HTMLElement} block - Cart block element
  */
 function applyDiscount(code, block) {
-  // eslint-disable-next-line no-console
-  console.log("Applying discount code:", code);
-
   // TODO: Implement actual discount logic
   // For now, just show a message
   const discountValueEl = block.querySelector(".cart-discount-value");
@@ -333,9 +322,6 @@ function handleCheckout() {
     alert("Your cart is empty");
     return;
   }
-
-  // eslint-disable-next-line no-console
-  console.log("Proceeding to checkout with cart:", cartData);
 
   // Navigate to checkout page
   const currentPath = window.location.pathname;
@@ -441,24 +427,16 @@ function buildCartSummary(cartData) {
 async function fetchAllProducts(path, isAuthor) {
   try {
     if (!path) {
-      // eslint-disable-next-line no-console
-      console.log("You May Also Like: No path provided");
       return [];
     }
     const baseUrl = isAuthor
       ? "https://author-p168578-e1802821.adobeaemcloud.com"
       : "https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGraphQl";
     const url = `${baseUrl}/graphql/execute.json/luma3/menproductspagelister?_path=${path}`;
-    // eslint-disable-next-line no-console
-    console.log("You May Also Like: Fetching from URL:", url);
     const resp = await fetch(url, { method: "GET" });
     const json = await resp.json();
-    // eslint-disable-next-line no-console
-    console.log("You May Also Like: GraphQL response:", json);
     const items = json?.data?.productsModelList?.items || [];
     const filtered = items.filter((item) => item && item.sku);
-    // eslint-disable-next-line no-console
-    console.log("You May Also Like: All products fetched:", filtered.length);
     return filtered;
   } catch (e) {
     // eslint-disable-next-line no-console
@@ -577,25 +555,8 @@ function buildRecommendations(allProducts, cartData, isAuthor) {
     }
   });
 
-  // eslint-disable-next-line no-console
-  console.log(
-    "You May Also Like: Cart categories:",
-    Array.from(cartCategories)
-  );
-
   // Get cart product IDs to exclude
   const cartProductIds = new Set(Object.keys(cartData.products || {}));
-
-  // Debug: Log first few product categories from allProducts
-  // eslint-disable-next-line no-console
-  console.log(
-    "You May Also Like: Sample product categories from allProducts:",
-    allProducts.slice(0, 3).map((p) => ({
-      sku: p.sku,
-      name: p.name,
-      categories: p.category,
-    }))
-  );
 
   // Filter products by matching category and exclude items in cart
   const recommendations = allProducts
@@ -608,12 +569,6 @@ function buildRecommendations(allProducts, cartData, isAuthor) {
       return productCategories.some((cat) => cartCategories.has(cat));
     })
     .slice(0, 5); // Limit to 5 products
-
-  // eslint-disable-next-line no-console
-  console.log(
-    "You May Also Like: Filtered recommendations:",
-    recommendations.length
-  );
 
   if (recommendations.length === 0) {
     return null;
@@ -649,8 +604,6 @@ function setupDataLayerListener(block, folderHref, isAuthor, allProducts) {
   document.addEventListener("dataLayerUpdated", async (event) => {
     const { dataLayer } = event.detail;
     if (dataLayer && dataLayer.cart) {
-      // eslint-disable-next-line no-console
-      console.log("Cart data updated, refreshing display");
       renderCartItems(block, dataLayer.cart);
       updateCartTotals(block, dataLayer.cart);
 
@@ -731,12 +684,6 @@ export default async function decorate(block) {
     console.warn(
       "⚠️ getDataLayerProperty not available yet - cart may not display correctly"
     );
-  } else if (cartData) {
-    console.log("✓ Cart data loaded from dataLayer:", {
-      productCount: cartData.productCount,
-      products: Object.keys(cartData.products || {}),
-      total: cartData.total,
-    });
   }
 
   const currentCart = cartData || {
@@ -779,7 +726,4 @@ export default async function decorate(block) {
 
   // Setup dataLayer listener for real-time updates
   setupDataLayerListener(block, folderHref, isAuthor, allProducts);
-
-  // eslint-disable-next-line no-console
-  console.log("Cart initialized with", currentCart.productCount, "items");
 }

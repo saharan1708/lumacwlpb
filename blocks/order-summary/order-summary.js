@@ -245,11 +245,6 @@ function resetCart() {
 
   if (window.updateDataLayer) {
     window.updateDataLayer({ cart: defaultCart, product: null }, false);
-    // eslint-disable-next-line no-console
-    console.log("✓ Cart cleared - ready for next order");
-    console.log(
-      "→ Personal information preserved for faster checkout next time"
-    );
   }
 }
 
@@ -324,8 +319,6 @@ function setupDataLayerListener(block) {
   document.addEventListener("dataLayerUpdated", (event) => {
     const { dataLayer } = event.detail;
     if (dataLayer && dataLayer.cart) {
-      // eslint-disable-next-line no-console
-      console.log("Cart data updated, refreshing order summary");
       renderOrderSummary(block);
     }
   });
@@ -347,7 +340,4 @@ export default function decorate(block) {
 
   // Setup listener for cart updates
   setupDataLayerListener(block);
-
-  // eslint-disable-next-line no-console
-  console.log("Order Summary initialized");
 }

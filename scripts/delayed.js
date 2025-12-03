@@ -7,6 +7,7 @@ import {
 } from "./aem.js";
 import { a, span, i } from "./dom-helpers.js";
 import { isInternalPage } from "./utils.js";
+import { initializeCustomEvents } from "./custom-events.js";
 
 // Adobe Target - start
 
@@ -116,3 +117,12 @@ if (!window.location.hostname.includes("localhost")) {
     // loadAT();
   }
 }
+
+// ==========================================
+// Initialize Custom Events System
+// Loaded here (in delayed.js) to ensure:
+// 1. Custom events don't block critical page rendering
+// 2. DataLayer is fully initialized and stable
+// 3. All page content is loaded before event tracking
+// ==========================================
+initializeCustomEvents();

@@ -151,20 +151,6 @@ function navigateToPage(page) {
 function buildCheckoutForm() {
   const savedData = loadFormData();
 
-  // Log helpful message about pre-populated data
-  if (savedData && Object.keys(savedData).length > 0) {
-    const filledFields = Object.keys(savedData).filter(
-      (key) => savedData[key]
-    ).length;
-    console.log(
-      `✓ Checkout form pre-populated with saved data (${filledFields} field${
-        filledFields !== 1 ? "s" : ""
-      })`
-    );
-  } else {
-    console.log("No saved checkout data found - form is empty");
-  }
-
   const form = document.createElement("form");
   form.className = "checkout-form";
 
@@ -560,8 +546,6 @@ function setupDataLayerListener(summarySection) {
   document.addEventListener("dataLayerUpdated", (event) => {
     const { dataLayer } = event.detail;
     if (dataLayer && dataLayer.cart) {
-      // eslint-disable-next-line no-console
-      console.log("Cart data updated, refreshing checkout summary");
       updateSummary(summarySection);
     }
   });
@@ -591,7 +575,4 @@ export default function decorate(block) {
   if (summarySection) {
     setupDataLayerListener(summarySection);
   }
-
-  // eslint-disable-next-line no-console
-  console.log("Checkout page initialized");
 }
