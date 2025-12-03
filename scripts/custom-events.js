@@ -590,8 +590,132 @@ function cleanupCustomEventListeners() {
 }
 
 /**
+ * Re-triggers pageload events for the current page
+ * Used when navigation occurs to fire events again
+ * @param {Object} config - Custom events configuration
+ */
+function retriggerPageloadEvents(config) {
+  if (!config || !config.data || !Array.isArray(config.data)) {
+    return;
+  }
+
+  const pagePath = window.location.pathname;
+
+  // Only re-trigger pageload events
+  config.data.forEach((eventConfig) => {
+    const {
+      page,
+      excludes,
+      event,
+      trigger: explicitTrigger,
+      element = "",
+    } = eventConfig;
+
+    // Determine trigger type (same logic as triggerCustomEvents)
+    let trigger;
+    if (explicitTrigger && explicitTrigger.trim() !== "") {
+      trigger = explicitTrigger;
+    } else if (element && element.trim() !== "") {
+      trigger = "click";
+    } else if (page) {
+      trigger = "pageload";
+    } else {
+      trigger = "pageload";
+    }
+
+    // Only process pageload triggers
+    if (
+      trigger.toLowerCase() !== "pageload" &&
+      trigger.toLowerCase() !== "domcontentloaded"
+    ) {
+      return;
+    }
+
+    // Skip if event name is not defined
+    if (!event) {
+      return;
+    }
+
+    // Check if current page is excluded
+    if (isPageExcluded(excludes, pagePath)) {
+      return;
+    }
+
+    // Check if current page matches the page pattern
+    const shouldExecute = matchesPagePattern(page, pagePath);
+
+    if (shouldExecute) {
+      // Wait for dataLayer to be ready before dispatching
+      const checkDataLayerReady = () => {
+        if (
+          window.dataLayer &&
+          window._dataLayerReady &&
+          (!window._dataLayerQueue || window._dataLayerQueue.length === 0) &&
+          !window._dataLayerUpdating
+        ) {
+          dispatchCustomEvent(event, eventConfig, pagePath);
+        } else {
+          setTimeout(checkDataLayerReady, 50);
+        }
+      };
+      checkDataLayerReady();
+    }
+  });
+}
+
+/**
+ * Sets up navigation listeners to re-trigger pageload events
+ * Handles browser back/forward navigation and client-side navigation
+ * @param {Object} config - Custom events configuration
+ */
+function setupNavigationListeners(config) {
+  // Store the config globally for navigation handlers
+  window._customEventsConfig = config;
+
+  // Handle browser back/forward navigation (popstate)
+  window.addEventListener("popstate", () => {
+    console.log(
+      "Navigation detected (popstate), re-triggering pageload events"
+    );
+    retriggerPageloadEvents(config);
+  });
+
+  // Handle client-side navigation (pushState/replaceState)
+  // Wrap history.pushState and history.replaceState to detect navigation
+  const originalPushState = history.pushState;
+  const originalReplaceState = history.replaceState;
+
+  history.pushState = function (...args) {
+    originalPushState.apply(this, args);
+    console.log(
+      "Navigation detected (pushState), re-triggering pageload events"
+    );
+    // Small delay to allow page content to update
+    setTimeout(() => retriggerPageloadEvents(config), 100);
+  };
+
+  history.replaceState = function (...args) {
+    originalReplaceState.apply(this, args);
+    console.log(
+      "Navigation detected (replaceState), re-triggering pageload events"
+    );
+    // Small delay to allow page content to update
+    setTimeout(() => retriggerPageloadEvents(config), 100);
+  };
+
+  // Listen for custom navigation events (in case the app uses them)
+  document.addEventListener("navigation", () => {
+    console.log(
+      "Navigation detected (custom event), re-triggering pageload events"
+    );
+    retriggerPageloadEvents(config);
+  });
+}
+
+/**
  * Initializes custom events system
  * Loads configuration once and triggers events for current page
+ * Sets up navigation listeners to re-trigger events on page changes
  * Called from delayed.js after page load to not block critical rendering
  */
 export async function initializeCustomEvents() {
@@ -618,6 +742,8 @@ export async function initializeCustomEvents() {
         !window._dataLayerUpdating
       ) {
         triggerCustomEvents(config);
+        // Set up navigation listeners after initial events are triggered
+        setupNavigationListeners(config);
       } else {
         setTimeout(checkDataLayerReady, 50);
       }
@@ -632,5 +758,6 @@ export async function initializeCustomEvents() {
 // Make functions globally accessible
 window.triggerCustomEvents = triggerCustomEvents;
 window.cleanupCustomEventListeners = cleanupCustomEventListeners;
+window.retriggerPageloadEvents = retriggerPageloadEvents;
 
 initializeCustomEvents();
