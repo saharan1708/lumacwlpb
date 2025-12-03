@@ -289,12 +289,14 @@ function executeDefaultAction(actionDetails, element) {
       // Handle form submission
       if (element && element.tagName === "FORM") {
         // Submit the form programmatically
-        element.submit();
+        // Use HTMLFormElement.prototype.submit to avoid conflicts with form elements named "submit"
+        HTMLFormElement.prototype.submit.call(element);
       } else if (actionDetails.submitButton) {
         // Trigger form submit via the button
         const form = actionDetails.submitButton.closest("form");
         if (form) {
-          form.submit();
+          // Use HTMLFormElement.prototype.submit to avoid conflicts with form elements named "submit"
+          HTMLFormElement.prototype.submit.call(form);
         }
       }
       break;

@@ -505,6 +505,142 @@ async function applyCFTheme(themeCFReference) {
 }
 
 /**
+ * Creates user profile dropdown with sign-out option
+ * @param {Element} container - Container to append the profile to
+ * @param {string} langCode - Current language code
+ */
+function createUserProfile(container, langCode) {
+  const firstName = window.getDataLayerProperty
+    ? window.getDataLayerProperty("name.firstName")
+    : null;
+  const userName = firstName || "User";
+
+  // Create user profile container
+  const userProfile = document.createElement("div");
+  userProfile.className = "user-profile";
+
+  // Create user button (icon + name)
+  const userButton = document.createElement("button");
+  userButton.type = "button";
+  userButton.className = "user-profile-btn";
+  userButton.setAttribute("aria-haspopup", "menu");
+  userButton.setAttribute("aria-expanded", "false");
+  userButton.setAttribute("aria-label", `User menu for ${userName}`);
+
+  // User icon (SVG)
+  const userIcon = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "svg"
+  );
+  userIcon.setAttribute("class", "user-icon");
+  userIcon.setAttribute("width", "24");
+  userIcon.setAttribute("height", "24");
+  userIcon.setAttribute("viewBox", "0 0 24 24");
+  userIcon.setAttribute("fill", "currentColor");
+  userIcon.innerHTML = `
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+  `;
+
+  // User name
+  const userNameSpan = document.createElement("span");
+  userNameSpan.className = "user-name";
+  userNameSpan.textContent = userName;
+
+  userButton.append(userIcon, userNameSpan);
+
+  // Create dropdown menu
+  const userMenu = document.createElement("div");
+  userMenu.className = "user-menu";
+  userMenu.setAttribute("role", "menu");
+  userMenu.style.display = "none";
+
+  // Sign out button
+  const signOutButton = document.createElement("button");
+  signOutButton.type = "button";
+  signOutButton.className = "sign-out-btn";
+  signOutButton.setAttribute("role", "menuitem");
+  signOutButton.textContent = "Sign out";
+  signOutButton.addEventListener("click", () => handleSignOut(langCode));
+
+  userMenu.appendChild(signOutButton);
+
+  // Toggle dropdown on click
+  userButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const expanded = userButton.getAttribute("aria-expanded") === "true";
+    userButton.setAttribute("aria-expanded", expanded ? "false" : "true");
+    userMenu.style.display = expanded ? "none" : "block";
+    userProfile.classList.toggle("open", !expanded);
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!userProfile.contains(e.target)) {
+      userButton.setAttribute("aria-expanded", "false");
+      userMenu.style.display = "none";
+      userProfile.classList.remove("open");
+    }
+  });
+
+  // Close dropdown on Escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      userButton.setAttribute("aria-expanded", "false");
+      userMenu.style.display = "none";
+      userProfile.classList.remove("open");
+    }
+  });
+
+  userProfile.append(userButton, userMenu);
+  container.append(userProfile);
+}
+
+/**
+ * Handles user sign-out
+ * @param {string} langCode - Current language code
+ */
+function handleSignOut(langCode) {
+  // Clear authentication flag
+  localStorage.removeItem("luma_user_logged_in");
+
+  // Optional: Clear other user data (uncomment if needed)
+  // localStorage.removeItem('luma_registered_user');
+  // localStorage.removeItem('com.adobe.reactor.dataElements.Profile - Email');
+
+  // Clear dataLayer user information
+  if (window.updateDataLayer) {
+    window.updateDataLayer({
+      name: { firstName: "", lastName: "" },
+      personalEmail: { address: "" },
+      mobilePhone: { number: "" },
+      homeAddress: { street1: "", city: "", postalCode: "" },
+      person: { gender: "", birthDayAndMonth: "", loyaltyConsent: false },
+      individualCharacteristics: {
+        shoeSize: "",
+        shirtSize: "",
+        favoriteColor: "",
+      },
+      marketing: {
+        email: { val: true },
+        call: { val: true },
+        sms: { val: true },
+      },
+    });
+  }
+
+  // Dispatch sign-out event
+  const signOutEvent = new CustomEvent("user-signed-out", {
+    detail: { timestamp: new Date().toISOString() },
+    bubbles: true,
+  });
+  document.dispatchEvent(signOutEvent);
+
+  // Redirect to home page
+  const homeUrl = langCode === "en" ? "/" : `/${langCode}`;
+  window.location.href = homeUrl;
+}
+
+/**
  * loads and decorates the header, mainly the nav
  * @param {Element} block The header block element
  */
@@ -626,13 +762,21 @@ export default async function decorate(block) {
       updateCartCount();
     });
 
-    // Add Sign In Button
-    const signInLink = document.createElement("a");
-    signInLink.href = "/en/sign-in";
-    signInLink.className = "sign-in-btn";
-    signInLink.textContent = "SIGN IN";
-    signInLink.setAttribute("aria-label", "Sign In");
-    targetContainer.append(signInLink);
+    // Add Sign In Button or User Profile
+    const isLoggedIn = localStorage.getItem("luma_user_logged_in") === "true";
+
+    if (isLoggedIn) {
+      // Show user profile with dropdown
+      createUserProfile(targetContainer, langCode);
+    } else {
+      // Show sign-in button
+      const signInLink = document.createElement("a");
+      signInLink.href = `/${langCode}/sign-in`;
+      signInLink.className = "sign-in-btn";
+      signInLink.textContent = "SIGN IN";
+      signInLink.setAttribute("aria-label", "Sign In");
+      targetContainer.append(signInLink);
+    }
 
     // Language switcher (minimal UI)
     try {

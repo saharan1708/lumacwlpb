@@ -156,8 +156,8 @@ export default async function decorate(block) {
             properties: { colspan: 12 },
           },
           {
-            id: "submit",
-            name: "submit",
+            id: "submit-btn",
+            name: "submitButton",
             fieldType: "button",
             buttonType: "submit",
             label: { value: "SUBMIT" },
@@ -278,7 +278,7 @@ function attachFormSubmitHandler(block) {
 
       // Redirect to sign-in page after a short delay
       setTimeout(() => {
-        window.location.href = "/sign-in";
+        window.location.href = "/en/sign-in";
       }, 1500);
     } catch (error) {
       console.error("Registration error:", error);
