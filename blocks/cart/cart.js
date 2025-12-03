@@ -59,8 +59,17 @@ function removeFromCart(productId, block) {
     );
     currentCart.total = currentCart.subTotal;
 
-    // Update dataLayer
-    window.updateDataLayer({ cart: currentCart });
+    // Update dataLayer (use merge=false to replace entire cart, not deep merge)
+    // This ensures deleted products are actually removed, not merged back
+    if (window.updateDataLayer) {
+      window.updateDataLayer({ cart: currentCart }, false);
+      console.log(
+        `Removed product ${productId} from cart. New cart:`,
+        currentCart
+      );
+    } else {
+      console.error("updateDataLayer not available");
+    }
 
     // Refresh cart display
     renderCartItems(block, currentCart);
@@ -107,8 +116,8 @@ function updateQuantity(productId, newQuantity, block) {
     );
     currentCart.total = currentCart.subTotal;
 
-    // Update dataLayer
-    window.updateDataLayer({ cart: currentCart });
+    // Update dataLayer (use merge=false to replace entire cart)
+    window.updateDataLayer({ cart: currentCart }, false);
 
     // Update display
     updateCartTotals(block, currentCart);
@@ -196,10 +205,13 @@ function buildCartItem(product, block, isAuthor) {
   removeCell.className = "cart-item-remove";
 
   const removeBtn = document.createElement("button");
+  removeBtn.type = "button"; // Explicitly set type to prevent form submission
   removeBtn.className = "cart-remove-btn";
   removeBtn.innerHTML = "&times;";
   removeBtn.setAttribute("aria-label", `Remove ${name} from cart`);
-  removeBtn.addEventListener("click", () => {
+  removeBtn.addEventListener("click", (e) => {
+    e.preventDefault(); // Prevent any default action
+    e.stopPropagation(); // Prevent event bubbling (important for custom events)
     removeFromCart(id, block);
   });
 
