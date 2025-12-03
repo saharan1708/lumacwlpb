@@ -452,15 +452,28 @@ async function applyCFTheme(themeCFReference) {
           }),
         };
 
-    // Fetch theme data
-    const response = await fetch(requestConfig.url, {
-      method: requestConfig.method,
-      headers: requestConfig.headers,
-      ...(requestConfig.body && { body: requestConfig.body }),
-    });
+    // Fetch theme data from AEM or wrapper service
+    // Uses configured request settings (URL, method, headers)
+    // and conditionally includes body for POST requests
+    let response;
+    try {
+      response = await fetch(requestConfig.url, {
+        method: requestConfig.method,
+        headers: requestConfig.headers,
+        ...(requestConfig.body && { body: requestConfig.body }),
+      });
+    } catch (fetchError) {
+      // Handle network errors (no internet, timeout, CORS, etc.)
+      console.error("Network error while fetching theme data:", fetchError);
+      return; // Exit gracefully without breaking other JS execution
+    }
 
+    // Check if the request was successful (2xx status)
     if (!response.ok) {
-      console.error(`HTTP error! status: ${response.status}`);
+      console.error(
+        `HTTP error while fetching theme data! Status: ${response.status}`
+      );
+      return; // Exit gracefully without breaking other JS execution
     }
 
     let themeCFRes;
@@ -469,13 +482,16 @@ async function applyCFTheme(themeCFReference) {
       const responseText = await response.text();
 
       if (!responseText || responseText.trim() === "") {
-        console.warn("Empty response received from server");
-        return;
+        console.warn("Empty response received from theme service");
+        return; // Exit gracefully
       }
       themeCFRes = JSON.parse(responseText);
     } catch (jsonError) {
-      console.error("Error parsing JSON response:", jsonError);
+      console.error("Error parsing theme JSON response:", jsonError);
+      return; // Exit gracefully without breaking other JS execution
     }
+
+    // Validate that we have the expected data structure
     const themeColors = themeCFRes?.data?.brandThemeByPath?.item;
 
     if (!themeColors) {

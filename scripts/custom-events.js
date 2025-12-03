@@ -632,3 +632,5 @@ export async function initializeCustomEvents() {
 // Make functions globally accessible
 window.triggerCustomEvents = triggerCustomEvents;
 window.cleanupCustomEventListeners = cleanupCustomEventListeners;
+
+initializeCustomEvents();

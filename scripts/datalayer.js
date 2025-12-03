@@ -256,7 +256,7 @@ export function buildCustomDataLayer() {
         },
         page: { name: "home", title: "HOME" },
         cart: {},
-        product: null, // Will be populated on product detail pages
+        product: {}, // Will be populated on product detail pages
         partnerData: {
           PartnerID: "Partner456",
           BrandLoyalist: 88,
@@ -367,7 +367,7 @@ export function buildCustomDataLayer() {
       },
       page: {},
       cart: {},
-      product: null,
+      product: {},
       partnerData: {},
       name: { firstName: "", lastName: "" },
       personalEmail: { address: "" },

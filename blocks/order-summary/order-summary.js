@@ -244,7 +244,7 @@ function resetCart() {
   };
 
   if (window.updateDataLayer) {
-    window.updateDataLayer({ cart: defaultCart, product: null }, false);
+    window.updateDataLayer({ cart: defaultCart, product: {} }, false);
   }
 }
 

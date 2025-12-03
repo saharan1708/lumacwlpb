@@ -125,4 +125,3 @@ if (!window.location.hostname.includes("localhost")) {
 // 2. DataLayer is fully initialized and stable
 // 3. All page content is loaded before event tracking
 // ==========================================
-initializeCustomEvents();
