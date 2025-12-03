@@ -33,8 +33,8 @@ main .cart .cart-content {
     margin-bottom: 80px;
 }
 
-/* When cart is empty, center the content */
-main .cart .cart-content:has(.cart-empty-state) {
+/* When cart is empty, center the content - using class instead of :has() for compatibility */
+main .cart .cart-content.cart-is-empty {
     grid-template-columns: 1fr;
     place-items: center;
 }

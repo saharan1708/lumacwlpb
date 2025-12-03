@@ -257,6 +257,16 @@ function renderCartItems(block, cartData) {
     }
   }
 
+  // Add/remove cart-is-empty class to cart-content (for CSS styling - :has() alternative)
+  const cartContent = block.querySelector(".cart-content");
+  if (cartContent) {
+    if (isEmpty) {
+      cartContent.classList.add("cart-is-empty");
+    } else {
+      cartContent.classList.remove("cart-is-empty");
+    }
+  }
+
   if (isEmpty) {
     const emptyContainer = document.createElement("div");
     emptyContainer.className = "cart-empty";
