@@ -120,6 +120,235 @@ export default async function decorate(block) {
 
   const formModule = await import('../form/form.js');
   await formModule.default(formContainer);
+
+  // Wait for form to be fully rendered before attaching listeners
+  setTimeout(() => {
+    attachDataLayerUpdaters(block);
+    prePopulateFormFromDataLayer(block);
+  }, 100);
+}
+
+/**
+ * Pre-populates form fields from existing dataLayer values
+ * @param {HTMLElement} block - The user registration block
+ */
+function prePopulateFormFromDataLayer(block) {
+  if (!window.dataLayer) return;
+
+  const form = block.querySelector('form');
+  if (!form) return;
+
+  const dataLayer = window.dataLayer;
+
+  // Helper function to safely get nested property
+  const getNestedProperty = (obj, path) => {
+    return path.split('.').reduce((current, prop) => current?.[prop], obj);
+  };
+
+  // Populate each field from dataLayer
+  Object.keys(fieldToDataLayerMap).forEach((fieldName) => {
+    const dataLayerPath = fieldToDataLayerMap[fieldName];
+    const value = getNestedProperty(dataLayer, dataLayerPath);
+
+    if (value !== undefined && value !== null && value !== '') {
+      const field = form.querySelector(`[name="${fieldName}"]`);
+      if (!field) return;
+
+      if (field.type === 'checkbox') {
+        if (fieldName === 'loyalty') {
+          field.checked = value === true || value === 'true';
+        } else {
+          field.checked = true;
+        }
+      } else if (field.tagName.toLowerCase() === 'select') {
+        field.value = value;
+      } else {
+        field.value = value;
+      }
+    }
+  });
+
+  // Pre-populate communication preferences
+  if (dataLayer.marketing) {
+    const commPrefsCheckboxes = form.querySelectorAll('input[name="commPrefs"]');
+    commPrefsCheckboxes.forEach((checkbox) => {
+      const prefType = checkbox.value; // 'email', 'phone', 'sms'
+      if (prefType === 'email' && dataLayer.marketing.email?.val) {
+        checkbox.checked = true;
+      } else if (prefType === 'phone' && dataLayer.marketing.call?.val) {
+        checkbox.checked = true;
+      } else if (prefType === 'sms' && dataLayer.marketing.sms?.val) {
+        checkbox.checked = true;
+      }
+    });
+  }
+}
+
+/**
+ * Maps form field names to dataLayer paths
+ */
+const fieldToDataLayerMap = {
+  firstName: 'name.firstName',
+  lastName: 'name.lastName',
+  email: 'personalEmail.address',
+  phone: 'mobilePhone.number',
+  address: 'homeAddress.street1',
+  zip: 'homeAddress.postalCode',
+  city: 'homeAddress.city',
+  gender: 'person.gender',
+  dob: 'person.birthDayAndMonth',
+  loyalty: 'person.loyaltyConsent',
+  shoeSize: 'individualCharacteristics.shoeSize',
+  shirtSize: 'individualCharacteristics.shirtSize',
+  favoriteColor: 'individualCharacteristics.favoriteColor',
+};
+
+/**
+ * Updates dataLayer with field value
+ * @param {string} fieldName - Form field name
+ * @param {*} value - Field value
+ */
+function updateDataLayerField(fieldName, value) {
+  if (!window.updateDataLayer) {
+    console.warn('DataLayer not available yet');
+    return;
+  }
+
+  const dataLayerPath = fieldToDataLayerMap[fieldName];
+  if (!dataLayerPath) {
+    // Handle communication preferences separately
+    if (fieldName === 'commPrefs') {
+      updateCommunicationPreferences(value);
+      return;
+    }
+    return;
+  }
+
+  // Build the nested object structure
+  const pathParts = dataLayerPath.split('.');
+  const updateObj = {};
+  let current = updateObj;
+
+  for (let i = 0; i < pathParts.length - 1; i++) {
+    current[pathParts[i]] = {};
+    current = current[pathParts[i]];
+  }
+
+  // Convert loyalty checkbox to boolean
+  if (fieldName === 'loyalty') {
+    current[pathParts[pathParts.length - 1]] = value === 'true' || value === true || (Array.isArray(value) && value.includes('true'));
+  } else {
+    current[pathParts[pathParts.length - 1]] = value || '';
+  }
+
+  window.updateDataLayer(updateObj);
+}
+
+/**
+ * Updates communication preferences in dataLayer
+ * @param {Array} preferences - Array of selected preferences ['email', 'phone', 'sms']
+ */
+function updateCommunicationPreferences(preferences = []) {
+  if (!window.updateDataLayer) return;
+
+  const prefsArray = Array.isArray(preferences) ? preferences : [];
+  
+  window.updateDataLayer({
+    marketing: {
+      email: { val: prefsArray.includes('email') },
+      call: { val: prefsArray.includes('phone') },
+      sms: { val: prefsArray.includes('sms') },
+    },
+  });
+}
+
+/**
+ * Attaches dataLayer updaters to all form fields
+ * @param {HTMLElement} block - The user registration block
+ */
+function attachDataLayerUpdaters(block) {
+  const form = block.querySelector('form');
+  if (!form) {
+    console.warn('Form not found in user registration block');
+    return;
+  }
+
+  // Get all form fields (inputs, selects, textareas)
+  const fields = form.querySelectorAll('input, select, textarea');
+
+  fields.forEach((field) => {
+    const fieldName = field.name || field.id;
+    if (!fieldName) return;
+
+    // Handle different field types
+    if (field.type === 'checkbox' || field.type === 'radio') {
+      // For checkboxes and radios, use change event
+      field.addEventListener('change', () => {
+        handleFieldUpdate(form, fieldName, field);
+      });
+    } else {
+      // For text inputs, selects, etc., use blur event
+      field.addEventListener('blur', () => {
+        handleFieldUpdate(form, fieldName, field);
+      });
+
+      // Also update on change for dropdowns
+      if (field.tagName.toLowerCase() === 'select') {
+        field.addEventListener('change', () => {
+          handleFieldUpdate(form, fieldName, field);
+        });
+      }
+    }
+  });
+
+  // Handle checkbox groups (communication preferences)
+  const commPrefsCheckboxes = form.querySelectorAll('input[name="commPrefs"]');
+  if (commPrefsCheckboxes.length > 0) {
+    commPrefsCheckboxes.forEach((checkbox) => {
+      checkbox.addEventListener('change', () => {
+        const selectedPrefs = Array.from(commPrefsCheckboxes)
+          .filter((cb) => cb.checked)
+          .map((cb) => cb.value);
+        updateDataLayerField('commPrefs', selectedPrefs);
+      });
+    });
+  }
+}
+
+/**
+ * Handles field update and triggers dataLayer update
+ * @param {HTMLFormElement} form - The form element
+ * @param {string} fieldName - Field name
+ * @param {HTMLElement} field - Field element
+ */
+function handleFieldUpdate(form, fieldName, field) {
+  let value;
+
+  if (field.type === 'checkbox') {
+    // Handle checkbox groups (multiple checkboxes with same name)
+    const checkboxes = form.querySelectorAll(`input[name="${fieldName}"]`);
+    if (checkboxes.length > 1) {
+      // Checkbox group
+      value = Array.from(checkboxes)
+        .filter((cb) => cb.checked)
+        .map((cb) => cb.value);
+    } else {
+      // Single checkbox
+      value = field.checked ? (field.value || 'true') : '';
+    }
+  } else if (field.type === 'radio') {
+    // For radio buttons, only update if this one is checked
+    if (field.checked) {
+      value = field.value;
+    } else {
+      return; // Don't update if radio is not checked
+    }
+  } else {
+    // Text, select, textarea
+    value = field.value;
+  }
+
+  updateDataLayerField(fieldName, value);
 }
 
 

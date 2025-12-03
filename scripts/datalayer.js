@@ -243,6 +243,7 @@ export function buildCustomDataLayer() {
           template: "web-modular/empty-website-v2",
           locale: "en-US",
           currency: "USD",
+          projectName: "luma3",
         },
         page: { name: "home", title: "HOME" },
         cart: {},
@@ -252,6 +253,38 @@ export function buildCustomDataLayer() {
           BrandLoyalist: 88,
           Seasonality: "Fall",
         },
+        // User profile information (populated during registration/signin)
+        name: {
+          firstName: "",
+          lastName: "",
+        },
+        personalEmail: {
+          address: "",
+        },
+        mobilePhone: {
+          number: "",
+        },
+        homeAddress: {
+          street1: "",
+          city: "",
+          postalCode: "",
+        },
+        person: {
+          gender: "",
+          birthDayAndMonth: "",
+          loyaltyConsent: false,
+        },
+        individualCharacteristics: {
+          shoeSize: "",
+          shirtSize: "",
+          favoriteColor: "",
+        },
+        marketing: {
+          call: { val: true },
+          email: { val: true },
+          sms: { val: true },
+        },
+        consents: {},
       };
     }
 
@@ -310,10 +343,26 @@ export function buildCustomDataLayer() {
     // Fallback: create basic dataLayer
     _dataLayer = {
       projectName: "luma3",
-      project: { id: "luma3" },
+      project: {
+        id: "luma3",
+        title: "Luma Website v3",
+        template: "web-modular/empty-website-v2",
+        locale: "en-US",
+        currency: "USD",
+        projectName: "luma3",
+      },
       page: {},
       cart: {},
+      product: null,
       partnerData: {},
+      name: { firstName: "", lastName: "" },
+      personalEmail: { address: "" },
+      mobilePhone: { number: "" },
+      homeAddress: { street1: "", city: "", postalCode: "" },
+      person: { gender: "", birthDayAndMonth: "", loyaltyConsent: false },
+      individualCharacteristics: { shoeSize: "", shirtSize: "", favoriteColor: "" },
+      marketing: { call: { val: true }, email: { val: true }, sms: { val: true } },
+      consents: {},
     };
 
     Object.defineProperty(window, "dataLayer", {

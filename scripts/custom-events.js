@@ -221,17 +221,103 @@ function isPageExcluded(excludes, currentPath) {
 }
 
 /**
+ * Checks if an element has a default action that should be intercepted
+ * @param {HTMLElement} element - The element to check
+ * @returns {Object|null} Object with action details or null
+ */
+function getElementDefaultAction(element) {
+  if (!element) return null;
+
+  // Check for link navigation
+  if (element.tagName === "A" && element.href) {
+    return {
+      type: "navigation",
+      href: element.href,
+      target: element.target || "_self",
+    };
+  }
+
+  // Check for form submission
+  if (element.tagName === "FORM") {
+    return {
+      type: "form-submit",
+      action: element.action,
+      method: element.method || "GET",
+      target: element.target || "_self",
+    };
+  }
+
+  // Check for submit button inside a form
+  if (
+    (element.tagName === "BUTTON" && element.type === "submit") ||
+    (element.tagName === "INPUT" && element.type === "submit")
+  ) {
+    const form = element.closest("form");
+    if (form) {
+      return {
+        type: "form-submit",
+        action: form.action,
+        method: form.method || "GET",
+        target: form.target || "_self",
+        submitButton: element,
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Executes the captured default action after tracking completes
+ * @param {Object} actionDetails - Details of the action to execute
+ * @param {HTMLElement} element - The original element
+ */
+function executeDefaultAction(actionDetails, element) {
+  if (!actionDetails) return;
+
+  switch (actionDetails.type) {
+    case "navigation":
+      // Handle link navigation
+      if (actionDetails.target === "_blank") {
+        window.open(actionDetails.href, "_blank");
+      } else {
+        window.location.href = actionDetails.href;
+      }
+      break;
+
+    case "form-submit":
+      // Handle form submission
+      if (element && element.tagName === "FORM") {
+        // Submit the form programmatically
+        element.submit();
+      } else if (actionDetails.submitButton) {
+        // Trigger form submit via the button
+        const form = actionDetails.submitButton.closest("form");
+        if (form) {
+          form.submit();
+        }
+      }
+      break;
+
+    default:
+      console.warn("Unknown action type:", actionDetails.type);
+  }
+}
+
+/**
  * Dispatches a custom event
  * @param {string} eventName - Name of the event
  * @param {Object} eventConfig - Event configuration
  * @param {string} pagePath - Current page path
  * @param {Object} additionalDetail - Additional event details (unused, kept for compatibility)
+ * @param {Function} callback - Optional callback to execute after event dispatch
  */
 function dispatchCustomEvent(
   eventName,
   eventConfig,
   pagePath,
-  additionalDetail = {}
+  additionalDetail = {},
+  callback = null
 ) {
   const customEvent = new CustomEvent(eventName, {
     bubbles: true,
@@ -241,6 +327,11 @@ function dispatchCustomEvent(
     window.dataLayer
   );
   document.dispatchEvent(customEvent);
+
+  // Execute callback immediately - delay is handled by the caller
+  if (callback && typeof callback === "function") {
+    callback();
+  }
 }
 
 /**
@@ -304,6 +395,8 @@ function triggerCustomEvents(config = null, currentPath = null) {
         event,
         trigger = "pageload",
         element = "",
+        preventDefaultAction = true, // Prevent default action for tracking (default: true)
+        beaconDelay = 100, // Delay in ms before resuming action (default: 100ms)
       } = eventConfig;
 
       // Skip if event name is not defined
@@ -362,16 +455,52 @@ function triggerCustomEvents(config = null, currentPath = null) {
 
             // Check if click occurred on or within the target element
             if (matchedElement) {
-              // Dispatch the custom event with full context
-              dispatchCustomEvent(event, eventConfig, pagePath, {
-                clickedElement: matchedElement,
-                clickEvent: {
-                  target: clickEvent.target,
-                  currentTarget: matchedElement,
-                  type: clickEvent.type,
-                  timeStamp: clickEvent.timeStamp,
-                },
-              });
+              // Check if the element has a default action (link, form submit, etc.)
+              const defaultAction = getElementDefaultAction(matchedElement);
+
+              // Only prevent default if configured and element has a default action
+              if (defaultAction && preventDefaultAction) {
+                // Prevent the default action from executing immediately
+                clickEvent.preventDefault();
+                clickEvent.stopPropagation();
+
+                // Dispatch the custom event with callback to resume default action
+                dispatchCustomEvent(
+                  event,
+                  eventConfig,
+                  pagePath,
+                  {
+                    clickedElement: matchedElement,
+                    clickEvent: {
+                      target: clickEvent.target,
+                      currentTarget: matchedElement,
+                      type: clickEvent.type,
+                      timeStamp: clickEvent.timeStamp,
+                    },
+                    defaultAction: defaultAction,
+                    prevented: true,
+                  },
+                  // Callback to execute after tracking completes (with configured delay)
+                  () => {
+                    setTimeout(() => {
+                      executeDefaultAction(defaultAction, matchedElement);
+                    }, beaconDelay);
+                  }
+                );
+              } else {
+                // No default action or preventDefaultAction is false, just dispatch the event normally
+                dispatchCustomEvent(event, eventConfig, pagePath, {
+                  clickedElement: matchedElement,
+                  clickEvent: {
+                    target: clickEvent.target,
+                    currentTarget: matchedElement,
+                    type: clickEvent.type,
+                    timeStamp: clickEvent.timeStamp,
+                  },
+                  defaultAction: defaultAction,
+                  prevented: false,
+                });
+              }
             }
           };
 
