@@ -305,4 +305,56 @@ main .user-registration select {
   }
 }
 
+/* Form validation states */
+.user-registration input.error,
+.user-registration select.error,
+.user-registration textarea.error {
+  border-color: #f44336 !important;
+  background-color: #ffebee !important;
+}
+
+.user-registration input.error:focus,
+.user-registration select.error:focus,
+.user-registration textarea.error:focus {
+  outline-color: #f44336;
+  border-color: #f44336;
+}
+
+/* Form messages */
+.user-registration .form-message {
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: bold;
+  animation: slideDown 0.3s ease-out;
+}
+
+.user-registration .form-message.success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.user-registration .form-message.error {
+  background-color: #f44336;
+  color: white;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Disabled submit button */
+.user-registration button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 

@@ -3,6 +3,9 @@
 // Standalone module for managing application data layer
 // ==========================================
 
+// Import language utilities
+import { getLanguage } from "./utils.js";
+
 // Queue for dataLayer updates that occur before dataLayer is ready
 window._dataLayerQueue = window._dataLayerQueue || [];
 window._dataLayerReady = false;
@@ -36,7 +39,7 @@ function deepMerge(target, source) {
   if (!target) {
     return isObject(source) ? { ...source } : source;
   }
-  
+
   const output = { ...target };
   if (isObject(target) && isObject(source)) {
     Object.keys(source).forEach((key) => {
@@ -235,6 +238,12 @@ export function buildCustomDataLayer() {
       _dataLayer = JSON.parse(savedDataLayer);
     } else {
       // Create initial dataLayer if none exists
+      // Detect current language from URL
+      const currentLang = getLanguage() || "en";
+      const locale = `${currentLang}-${
+        currentLang === "en" ? "US" : currentLang.toUpperCase()
+      }`;
+
       _dataLayer = {
         projectName: "luma3",
         project: {
@@ -341,6 +350,11 @@ export function buildCustomDataLayer() {
     console.error("Error initializing dataLayer:", error);
 
     // Fallback: create basic dataLayer
+    const currentLang = getLanguage() || "en";
+    const locale = `${currentLang}-${
+      currentLang === "en" ? "US" : currentLang.toUpperCase()
+    }`;
+
     _dataLayer = {
       projectName: "luma3",
       project: {
@@ -360,8 +374,16 @@ export function buildCustomDataLayer() {
       mobilePhone: { number: "" },
       homeAddress: { street1: "", city: "", postalCode: "" },
       person: { gender: "", birthDayAndMonth: "", loyaltyConsent: false },
-      individualCharacteristics: { shoeSize: "", shirtSize: "", favoriteColor: "" },
-      marketing: { call: { val: true }, email: { val: true }, sms: { val: true } },
+      individualCharacteristics: {
+        shoeSize: "",
+        shirtSize: "",
+        favoriteColor: "",
+      },
+      marketing: {
+        call: { val: true },
+        email: { val: true },
+        sms: { val: true },
+      },
       consents: {},
     };
 

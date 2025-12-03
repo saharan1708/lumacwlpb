@@ -393,16 +393,48 @@ function triggerCustomEvents(config = null, currentPath = null) {
         page,
         excludes,
         event,
-        trigger = "pageload",
+        trigger: explicitTrigger,
         element = "",
         preventDefaultAction = true, // Prevent default action for tracking (default: true)
         beaconDelay = 100, // Delay in ms before resuming action (default: 100ms)
       } = eventConfig;
 
+      // Smart default logic for trigger:
+      // 1. If user explicitly defined trigger, use it (highest precedence)
+      // 2. If element is defined, default to "click"
+      // 3. If page is defined and element is blank, default to "pageload"
+      // 4. Otherwise, default to "pageload"
+      let trigger;
+      let triggerSource = "";
+      if (explicitTrigger && explicitTrigger.trim() !== "") {
+        // User explicitly defined trigger - use it
+        trigger = explicitTrigger;
+        triggerSource = "explicit";
+      } else if (element && element.trim() !== "") {
+        // Element is defined - default to click
+        trigger = "click";
+        triggerSource = "default (element defined)";
+      } else if (page) {
+        // Page is defined, no element - default to pageload
+        trigger = "pageload";
+        triggerSource = "default (page defined)";
+      } else {
+        // Fallback
+        trigger = "pageload";
+        triggerSource = "default (fallback)";
+      }
+
       // Skip if event name is not defined
       if (!event) {
         console.warn("Event name not defined in config:", eventConfig);
         return;
+      }
+
+      // Log trigger determination for debugging (only if not explicitly set)
+      if (triggerSource !== "explicit") {
+        console.log(
+          `📌 Event "${event}": trigger="${trigger}" (${triggerSource})`
+        );
       }
 
       // Check if current page is excluded
