@@ -26,6 +26,7 @@ export default async function decorate(block) {
             fieldType: "email",
             label: { value: "Email address" },
             required: true,
+            autoComplete: "email",
             properties: { colspan: 12 },
           },
           {
@@ -34,6 +35,7 @@ export default async function decorate(block) {
             fieldType: "text-input",
             label: { value: "Password" },
             required: true,
+            autoComplete: "current-password",
             properties: { colspan: 12 },
             format: "password",
           },
