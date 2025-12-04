@@ -308,10 +308,6 @@ function updateAllDataLayerFields(formData) {
 
   // Build complete dataLayer update object
   const updateObj = {
-    name: {
-      firstName: formData.firstName || "",
-      lastName: formData.lastName || "",
-    },
     personalEmail: {
       address: formData.email || "",
     },
@@ -327,27 +323,35 @@ function updateAllDataLayerFields(formData) {
       gender: formData.gender || "",
       birthDayAndMonth: formData.dob || "",
       loyaltyConsent: formData.loyalty === "true" || formData.loyalty === true,
+      name: {
+        firstName: formData.firstName || "",
+        lastName: formData.lastName || "",
+      },
     },
     individualCharacteristics: {
-      shoeSize: formData.shoeSize || "",
-      shirtSize: formData.shirtSize || "",
-      favoriteColor: formData.favoriteColor || "",
+      retail: {
+        shoeSize: formData.shoeSize || "",
+        shirtSize: formData.shirtSize || "",
+        favoriteColor: formData.favoriteColor || "",
+      },
     },
-    marketing: {
-      email: {
-        val:
-          Array.isArray(formData.commPrefs) &&
-          formData.commPrefs.includes("email"),
-      },
-      call: {
-        val:
-          Array.isArray(formData.commPrefs) &&
-          formData.commPrefs.includes("phone"),
-      },
-      sms: {
-        val:
-          Array.isArray(formData.commPrefs) &&
-          formData.commPrefs.includes("sms"),
+    consents: {
+      marketing: {
+        email: {
+          val:
+            Array.isArray(formData.commPrefs) &&
+            formData.commPrefs.includes("email"),
+        },
+        call: {
+          val:
+            Array.isArray(formData.commPrefs) &&
+            formData.commPrefs.includes("phone"),
+        },
+        sms: {
+          val:
+            Array.isArray(formData.commPrefs) &&
+            formData.commPrefs.includes("sms"),
+        },
       },
     },
   };
@@ -467,17 +471,20 @@ function prePopulateFormFromDataLayer(block) {
   });
 
   // Pre-populate communication preferences
-  if (dataLayer.marketing) {
+  if (dataLayer.consents?.marketing) {
     const commPrefsCheckboxes = form.querySelectorAll(
       'input[name="commPrefs"]'
     );
     commPrefsCheckboxes.forEach((checkbox) => {
       const prefType = checkbox.value; // 'email', 'phone', 'sms'
-      if (prefType === "email" && dataLayer.marketing.email?.val) {
+      if (prefType === "email" && dataLayer.consents.marketing.email?.val) {
         checkbox.checked = true;
-      } else if (prefType === "phone" && dataLayer.marketing.call?.val) {
+      } else if (
+        prefType === "phone" &&
+        dataLayer.consents.marketing.call?.val
+      ) {
         checkbox.checked = true;
-      } else if (prefType === "sms" && dataLayer.marketing.sms?.val) {
+      } else if (prefType === "sms" && dataLayer.consents.marketing.sms?.val) {
         checkbox.checked = true;
       }
     });
@@ -488,8 +495,8 @@ function prePopulateFormFromDataLayer(block) {
  * Maps form field names to dataLayer paths
  */
 const fieldToDataLayerMap = {
-  firstName: "name.firstName",
-  lastName: "name.lastName",
+  firstName: "person.name.firstName",
+  lastName: "person.name.lastName",
   email: "personalEmail.address",
   phone: "mobilePhone.number",
   address: "homeAddress.street1",
@@ -498,9 +505,9 @@ const fieldToDataLayerMap = {
   gender: "person.gender",
   dob: "person.birthDayAndMonth",
   loyalty: "person.loyaltyConsent",
-  shoeSize: "individualCharacteristics.shoeSize",
-  shirtSize: "individualCharacteristics.shirtSize",
-  favoriteColor: "individualCharacteristics.favoriteColor",
+  shoeSize: "individualCharacteristics.retail.shoeSize",
+  shirtSize: "individualCharacteristics.retail.shirtSize",
+  favoriteColor: "individualCharacteristics.retail.favoriteColor",
 };
 
 /**
@@ -557,10 +564,12 @@ function updateCommunicationPreferences(preferences = []) {
   const prefsArray = Array.isArray(preferences) ? preferences : [];
 
   window.updateDataLayer({
-    marketing: {
-      email: { val: prefsArray.includes("email") },
-      call: { val: prefsArray.includes("phone") },
-      sms: { val: prefsArray.includes("sms") },
+    consents: {
+      marketing: {
+        email: { val: prefsArray.includes("email") },
+        call: { val: prefsArray.includes("phone") },
+        sms: { val: prefsArray.includes("sms") },
+      },
     },
   });
 }

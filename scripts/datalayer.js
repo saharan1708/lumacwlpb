@@ -263,10 +263,6 @@ export function buildCustomDataLayer() {
           Seasonality: "Fall",
         },
         // User profile information (populated during registration/signin)
-        name: {
-          firstName: "",
-          lastName: "",
-        },
         personalEmail: {
           address: "",
         },
@@ -282,18 +278,25 @@ export function buildCustomDataLayer() {
           gender: "",
           birthDayAndMonth: "",
           loyaltyConsent: false,
+          name: {
+            firstName: "",
+            lastName: "",
+          },
         },
         individualCharacteristics: {
-          shoeSize: "",
-          shirtSize: "",
-          favoriteColor: "",
+          retail: {
+            shoeSize: "",
+            shirtSize: "",
+            favoriteColor: "",
+          },
         },
-        marketing: {
-          call: { val: true },
-          email: { val: true },
-          sms: { val: true },
+        consents: {
+          marketing: {
+            call: { val: true },
+            email: { val: true },
+            sms: { val: true },
+          },
         },
-        consents: {},
       };
     }
 
@@ -369,22 +372,29 @@ export function buildCustomDataLayer() {
       cart: {},
       product: {},
       partnerData: {},
-      name: { firstName: "", lastName: "" },
       personalEmail: { address: "" },
       mobilePhone: { number: "" },
       homeAddress: { street1: "", city: "", postalCode: "" },
-      person: { gender: "", birthDayAndMonth: "", loyaltyConsent: false },
+      person: {
+        gender: "",
+        birthDayAndMonth: "",
+        loyaltyConsent: false,
+        name: { firstName: "", lastName: "" },
+      },
       individualCharacteristics: {
-        shoeSize: "",
-        shirtSize: "",
-        favoriteColor: "",
+        retail: {
+          shoeSize: "",
+          shirtSize: "",
+          favoriteColor: "",
+        },
       },
-      marketing: {
-        call: { val: true },
-        email: { val: true },
-        sms: { val: true },
+      consents: {
+        marketing: {
+          call: { val: true },
+          email: { val: true },
+          sms: { val: true },
+        },
       },
-      consents: {},
     };
 
     Object.defineProperty(window, "dataLayer", {

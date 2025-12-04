@@ -527,7 +527,7 @@ async function applyCFTheme(themeCFReference) {
  */
 function createUserProfile(container, langCode) {
   const firstName = window.getDataLayerProperty
-    ? window.getDataLayerProperty("name.firstName")
+    ? window.getDataLayerProperty("person.name.firstName")
     : null;
   const userName = firstName || "User";
 
