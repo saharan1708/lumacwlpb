@@ -51,9 +51,9 @@ function buildCartItem(product) {
   // Image
   const imageWrapper = document.createElement("div");
   imageWrapper.className = "order-summary-item-image";
-  if (product.images) {
+  if (product.image) {
     const img = document.createElement("img");
-    img.src = product.images;
+    img.src = product.image;
     img.alt = product.name || "Product image";
     img.loading = "lazy";
     imageWrapper.appendChild(img);

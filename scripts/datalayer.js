@@ -175,7 +175,8 @@ function executeAddToCart(productData) {
       id: productData.id,
       sku: productData.id,
       name: productData.name,
-      images: productData.images,
+      image: productData.image,
+      thumbnail: productData.thumbnail,
       category: productData.category,
       description: productData.description,
       quantity: productData.quantity || 1,
@@ -563,7 +564,8 @@ window.clearCheckoutData = function () {
  * @param {Object} productData - Product information
  * @param {string} productData.id - Product ID (used as key in cart.products object)
  * @param {string} productData.name - Product name
- * @param {string} productData.images - Product image URL
+ * @param {string} productData.image - Product image URL
+ * @param {string} productData.thumbnail - Product thumbnail URL
  * @param {string} productData.category - Product category
  * @param {string} productData.description - Product description
  * @param {number} productData.price - Product price

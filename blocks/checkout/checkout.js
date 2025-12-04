@@ -302,9 +302,9 @@ function buildCheckoutForm() {
 
       const itemImage = document.createElement("div");
       itemImage.className = "checkout-item-image";
-      if (product.images) {
+      if (product.image) {
         const img = document.createElement("img");
-        img.src = product.images;
+        img.src = product.image;
         img.alt = product.name || "Product";
         img.loading = "lazy";
         itemImage.appendChild(img);
@@ -480,9 +480,9 @@ function updateSummary(summarySection) {
 
       const itemImage = document.createElement("div");
       itemImage.className = "checkout-item-image";
-      if (product.images) {
+      if (product.image) {
         const img = document.createElement("img");
-        img.src = product.images;
+        img.src = product.image;
         img.alt = product.name || "Product";
         img.loading = "lazy";
         itemImage.appendChild(img);

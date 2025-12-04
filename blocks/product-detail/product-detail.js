@@ -188,6 +188,7 @@ function buildProductDetail(product, isAuthor) {
         : "",
     description: description?.html || description?.markdown || "",
     image: imageUrl || "",
+    thumbnail: imageUrl || "",
   };
 
   if (typeof window.updateDataLayer === "function") {
@@ -291,7 +292,8 @@ function buildProductDetail(product, isAuthor) {
     window.addToCart({
       id: id || sku || "",
       name: name || "",
-      images: imageUrl || "",
+      image: imageUrl || "",
+      thumbnail: imageUrl || "",
       category: formattedCategory,
       description: description?.html || description?.markdown || "",
       price: price || 0,
