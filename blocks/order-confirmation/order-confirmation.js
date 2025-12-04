@@ -16,6 +16,24 @@ function navigateToHome() {
 }
 
 /**
+ * Reset cart in dataLayer to default state
+ * Note: Does NOT clear checkout form data (personal/address info)
+ * User's personal information is preserved for future orders
+ */
+function resetCart() {
+  const defaultCart = {
+    productCount: 0,
+    products: {},
+    subTotal: 0,
+    total: 0,
+  };
+
+  if (window.updateDataLayer) {
+    window.updateDataLayer({ cart: defaultCart, product: {} }, false);
+  }
+}
+
+/**
  * Build order confirmation content
  * @param {string} orderNumber - Generated order number
  * @returns {HTMLElement} Confirmation content
@@ -82,6 +100,9 @@ export default function decorate(block) {
 
   const content = buildConfirmationContent(orderNumber);
 
+  setTimeout(() => {
+    resetCart();
+  }, 1000); // Small delay to ensure dataLayer is updated and cart badge is cleared
   container.appendChild(content);
   block.appendChild(container);
 }

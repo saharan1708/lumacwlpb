@@ -231,24 +231,6 @@ function buildOrderSummary(checkoutData, cartData) {
 }
 
 /**
- * Reset cart in dataLayer to default state
- * Note: Does NOT clear checkout form data (personal/address info)
- * User's personal information is preserved for future orders
- */
-function resetCart() {
-  const defaultCart = {
-    productCount: 0,
-    products: {},
-    subTotal: 0,
-    total: 0,
-  };
-
-  if (window.updateDataLayer) {
-    window.updateDataLayer({ cart: defaultCart, product: {} }, false);
-  }
-}
-
-/**
  * Build action buttons
  * @returns {HTMLElement} Buttons container
  */
@@ -269,9 +251,6 @@ function buildButtons() {
   confirmBtn.className = "order-summary-btn order-summary-btn-confirm";
   confirmBtn.textContent = "CONFIRM ORDER";
   confirmBtn.addEventListener("click", () => {
-    // Clear cart but preserve personal/address information
-    resetCart();
-
     // Small delay to ensure dataLayer is updated and cart badge is cleared
     setTimeout(() => {
       navigateToPage("order-confirmation");
