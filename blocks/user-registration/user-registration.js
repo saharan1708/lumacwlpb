@@ -73,7 +73,7 @@ export default async function decorate(block) {
             name: "gender",
             fieldType: "drop-down",
             label: { value: "Gender" },
-            enum: ["Female", "Male", "Other", "Prefer not to say"],
+            enum: ["female", "male", "other", "prefer not to say"],
             enumNames: ["Female", "Male", "Other", "Prefer not to say"],
             type: "string",
             properties: { colspan: 6 },
