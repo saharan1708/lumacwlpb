@@ -452,9 +452,9 @@ async function fetchAllProducts(path, isAuthor) {
       return [];
     }
     const baseUrl = isAuthor
-      ? "https://author-p168578-e1802821.adobeaemcloud.com"
+      ? "https://author-p168578-e1802821.adobeaemcloud.com/graphql/execute.json/luma3/menproductspagelister"
       : "https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGraphQl";
-    const url = `${baseUrl}/graphql/execute.json/luma3/menproductspagelister?_path=${path}`;
+    const url = `${baseUrl}?_path=${path}`;
     const resp = await fetch(url, { method: "GET" });
     const json = await resp.json();
     const items = json?.data?.productsModelList?.items || [];
