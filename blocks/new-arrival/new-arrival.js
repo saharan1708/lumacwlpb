@@ -294,25 +294,38 @@ function createCarousel(block, cards) {
     return 300;
   }
 
-  function getVisibleCards() {
-    // Calculate how many cards actually fit in the visible area
-    if (!carousel.offsetWidth) return 1;
+  function getWrapperPadding() {
+    const width = window.innerWidth;
+    // Padding values matching CSS (in pixels, converted from rem)
+    if (width <= 400) return 32; // 2rem
+    if (width <= 600) return 40; // 2.5rem
+    if (width <= 900) return 48; // 3rem
+    return 64; // 4rem (default)
+  }
 
-    const containerWidth = carousel.offsetWidth;
+  function getVisibleCards() {
+    // Get the wrapper's inner width to determine available space
+    const wrapperWidth = carouselWrapper.offsetWidth;
+    if (!wrapperWidth) return 1;
+
+    // Account for wrapper padding and button widths
+    const wrapperPadding = getWrapperPadding() * 2; // Both sides
+    const buttonWidth = window.innerWidth <= 600 ? 44 : window.innerWidth <= 900 ? 48 : 56;
+    const buttonSpace = buttonWidth * 2; // Both buttons
+    
+    // Available space = wrapper width - padding - button space
+    const availableWidth = wrapperWidth - wrapperPadding - buttonSpace;
+
     const cardWidth = getCardWidth();
     const gap = getGapSize();
 
-    // Calculate: (containerWidth + gap) / (cardWidth + gap)
-    // The +gap accounts for the fact that the last visible card doesn't need a gap after it
-    const calculated = Math.floor((containerWidth + gap) / (cardWidth + gap));
+    // Calculate how many COMPLETE cards can fit
+    // Formula: floor((availableWidth + gap) / (cardWidth + gap))
+    // The +gap is because the last card doesn't have a gap after it
+    const visibleCards = Math.floor((availableWidth + gap) / (cardWidth + gap));
 
-    // Fallback to reasonable defaults based on screen width
-    const width = window.innerWidth;
-    const defaultVisible =
-      width >= 1200 ? 4 : width >= 900 ? 3 : width >= 600 ? 2 : 1;
-
-    // Use the minimum of calculated and default to be safe
-    return Math.max(1, Math.min(calculated, defaultVisible));
+    // Ensure at least 1 card is visible and not more than total cards
+    return Math.max(1, Math.min(visibleCards, cards.length));
   }
 
   function updateCarousel() {
@@ -323,6 +336,12 @@ function createCarousel(block, cards) {
     const maxIndex = Math.max(0, cards.length - visibleCards);
 
     currentIndex = Math.max(0, Math.min(currentIndex, maxIndex));
+
+    // Set explicit width on carousel to show only complete cards
+    // Width = (cardWidth * visibleCards) + (gap * (visibleCards - 1))
+    const carouselWidth = (cardWidth * visibleCards) + (gap * (visibleCards - 1));
+    carousel.style.width = `${carouselWidth}px`;
+    carousel.style.overflow = 'hidden';
 
     const offset = -currentIndex * scrollDistance;
     track.style.transform = `translateX(${offset}px)`;

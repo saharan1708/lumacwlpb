@@ -33,12 +33,16 @@
 .na-carousel-wrapper {
   position: relative;
   padding: 0 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Carousel Container */
 .na-carousel {
   overflow: hidden;
-  width: 100%;
+  /* Width is set dynamically by JavaScript to show only complete cards */
+  margin: 0 auto;
 }
 
 /* Carousel Track */
