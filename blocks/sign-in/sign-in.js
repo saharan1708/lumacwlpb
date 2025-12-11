@@ -92,6 +92,48 @@ function isValidEmail(email) {
 }
 
 /**
+ * Prefills the email field using stored registration data
+ * @param {HTMLFormElement} form - The sign-in form element
+ */
+function prefillEmail(form) {
+  if (!form) return;
+  const emailInput = form.querySelector('input[name="email"]');
+  if (!emailInput) return;
+
+  const candidateKeys = ["com.adobe.reactor.dataElements.Profile - Email"];
+
+  let storedEmail = "";
+
+  for (const key of candidateKeys) {
+    const value = localStorage.getItem(key);
+    if (value && typeof value === "string" && value.trim()) {
+      storedEmail = value;
+      break;
+    }
+  }
+
+  if (!storedEmail) {
+    try {
+      const reg = JSON.parse(
+        localStorage.getItem("luma_registered_user") || "{}"
+      );
+      if (reg.email) {
+        storedEmail = reg.email;
+      }
+    } catch (e) {
+      // Ignore JSON parse errors
+    }
+  }
+
+  if (storedEmail) {
+    const cleanedEmail = storedEmail.replace(/[\*\"\']/g, "").trim();
+    if (isValidEmail(cleanedEmail)) {
+      emailInput.value = cleanedEmail;
+    }
+  }
+}
+
+/**
  * Checks if user profile exists via Adobe Profile API
  * @param {string} email - Email to check
  * @returns {Promise<{exists: boolean, profile: object|null}>} Profile check result
@@ -146,6 +188,8 @@ function attachSignInHandler(block) {
   const newForm = form.cloneNode(true);
   form.parentNode.replaceChild(newForm, form);
   form = newForm; // Update reference to use the new form
+
+  prefillEmail(form);
 
   // Now attach our custom submit handler to the clean form
   form.addEventListener("submit", async (event) => {
