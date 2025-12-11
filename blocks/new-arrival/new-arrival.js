@@ -1,7 +1,6 @@
 import { readBlockConfig, createOptimizedPicture } from "../../scripts/aem.js";
 import { isAuthorEnvironment } from "../../scripts/scripts.js";
 
-
 function buildCard(item, isAuthor) {
   const { id, sku, name, image = {}, category = [] } = item || {};
   let imgUrl = isAuthor ? image?._authorUrl : image?._publishUrl;
@@ -79,7 +78,11 @@ function buildCard(item, isAuthor) {
   const categoryText = category && category.length ? category.join(", ") : "";
   const cat = document.createElement("p");
   cat.className = "na-card-category";
-  cat.textContent = categoryText.replaceAll("luma:", "").replaceAll("/", ", ");
+  // Format category: remove "luma:" or "Lumaproducts:", replace commas with slashes, uppercase
+  cat.textContent = categoryText
+    .replace(/^(luma:|lumaproducts:)/gi, "") // Remove luma/lumaproducts prefix (case-insensitive)
+    .replace(/\//g, " / ") // Replace slashes with /
+    .toUpperCase(); // Convert to uppercase
   const title = document.createElement("h3");
   title.className = "na-card-title";
   title.textContent = name || "";
@@ -310,9 +313,10 @@ function createCarousel(block, cards) {
 
     // Account for wrapper padding and button widths
     const wrapperPadding = getWrapperPadding() * 2; // Both sides
-    const buttonWidth = window.innerWidth <= 600 ? 44 : window.innerWidth <= 900 ? 48 : 56;
+    const buttonWidth =
+      window.innerWidth <= 600 ? 44 : window.innerWidth <= 900 ? 48 : 56;
     const buttonSpace = buttonWidth * 2; // Both buttons
-    
+
     // Available space = wrapper width - padding - button space
     const availableWidth = wrapperWidth - wrapperPadding - buttonSpace;
 
@@ -339,9 +343,9 @@ function createCarousel(block, cards) {
 
     // Set explicit width on carousel to show only complete cards
     // Width = (cardWidth * visibleCards) + (gap * (visibleCards - 1))
-    const carouselWidth = (cardWidth * visibleCards) + (gap * (visibleCards - 1));
+    const carouselWidth = cardWidth * visibleCards + gap * (visibleCards - 1);
     carousel.style.width = `${carouselWidth}px`;
-    carousel.style.overflow = 'hidden';
+    carousel.style.overflow = "hidden";
 
     const offset = -currentIndex * scrollDistance;
     track.style.transform = `translateX(${offset}px)`;
