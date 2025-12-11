@@ -29,7 +29,13 @@ async function fetchProductDetail(path, sku, isAuthor) {
       ? "https://author-p168578-e1802821.adobeaemcloud.com/graphql/execute.json/luma3/getProductsByPathAndSKU"
       : "https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGrapghQlByPathAndSku";
     const url = `${baseUrl}?_path=${path}&sku=${sku}`;
-    const resp = await fetch(url, { method: "GET" });
+    const resp = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+    });
     const json = await resp.json();
     const items = json?.data?.productsModelList?.items || [];
     return items.length > 0 ? items[0] : null;
@@ -56,7 +62,13 @@ async function fetchAllProducts(path, isAuthor) {
       : "https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGraphQl";
     // Use the same query as category-products-lister which we know works
     const url = `${baseUrl}/graphql/execute.json/luma3/menproductspagelister?_path=${path}`;
-    const resp = await fetch(url, { method: "GET" });
+    const resp = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+    });
     const json = await resp.json();
     const items = json?.data?.productsModelList?.items || [];
     const filtered = items.filter((item) => item && item.sku);

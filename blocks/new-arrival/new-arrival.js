@@ -100,7 +100,13 @@ async function fetchProducts(path) {
       ? "https://author-p168578-e1802821.adobeaemcloud.com/graphql/execute.json/luma3/menproductspagelister"
       : "https://275323-918sangriatortoise.adobeioruntime.net/api/v1/web/dx-excshell-1/lumaProductsGraphQl";
     const url = `${baseUrl}?_path=${path}`;
-    const resp = await fetch(url, { method: "GET" });
+    const resp = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+    });
     const json = await resp.json();
     const items = json?.data?.productsModelList?.items || [];
     // Filter out null/invalid products
@@ -309,7 +315,7 @@ function createCarousel(block, cards) {
   function getVisibleCards() {
     // Get the wrapper's inner width to determine available space
     const wrapperWidth = carouselWrapper.offsetWidth;
-    
+
     // If wrapper has no width yet, use window width as fallback
     if (!wrapperWidth || wrapperWidth < 100) {
       const width = window.innerWidth;
@@ -412,15 +418,15 @@ function createCarousel(block, cards) {
   }, 100);
 
   // Strategy 3: Wait for images to load if any
-  const images = track.querySelectorAll('img');
+  const images = track.querySelectorAll("img");
   if (images.length > 0) {
     let loadedCount = 0;
     const totalImages = images.length;
-    images.forEach(img => {
+    images.forEach((img) => {
       if (img.complete) {
         loadedCount++;
       } else {
-        img.addEventListener('load', () => {
+        img.addEventListener("load", () => {
           loadedCount++;
           if (loadedCount === totalImages) {
             updateCarousel();
