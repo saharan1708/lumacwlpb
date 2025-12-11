@@ -408,6 +408,7 @@ main .product-detail .pd-rec-card-meta {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
 }
 
 main .product-detail .pd-rec-card-category {
@@ -415,17 +416,17 @@ main .product-detail .pd-rec-card-category {
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 1.2px;
-    text-transform: uppercase;
     color: #6c757d;
     line-height: 1;
+    text-align: center;
 }
 
 main .product-detail .pd-rec-card-title {
     margin: 0;
     font-size: 1rem;
-    font-weight: 500;
     line-height: 1.4;
     color: #212529;
+    text-align: center;
 }
 
 /* Responsive Grid Adjustments */

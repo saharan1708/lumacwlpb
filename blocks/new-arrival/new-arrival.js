@@ -309,7 +309,16 @@ function createCarousel(block, cards) {
   function getVisibleCards() {
     // Get the wrapper's inner width to determine available space
     const wrapperWidth = carouselWrapper.offsetWidth;
-    if (!wrapperWidth) return 1;
+    
+    // If wrapper has no width yet, use window width as fallback
+    if (!wrapperWidth || wrapperWidth < 100) {
+      const width = window.innerWidth;
+      // Return reasonable defaults based on screen size
+      if (width >= 1200) return Math.min(4, cards.length);
+      if (width >= 900) return Math.min(3, cards.length);
+      if (width >= 600) return Math.min(2, cards.length);
+      return 1;
+    }
 
     // Account for wrapper padding and button widths
     const wrapperPadding = getWrapperPadding() * 2; // Both sides
@@ -391,10 +400,39 @@ function createCarousel(block, cards) {
     }, 200);
   });
 
-  // Initial update - wait for DOM layout to complete
+  // Initial update - use multiple strategies to ensure proper initialization
+  // Strategy 1: Immediate requestAnimationFrame
   requestAnimationFrame(() => {
     updateCarousel();
   });
+
+  // Strategy 2: Backup calculation after a short delay to handle slow layout
+  setTimeout(() => {
+    updateCarousel();
+  }, 100);
+
+  // Strategy 3: Wait for images to load if any
+  const images = track.querySelectorAll('img');
+  if (images.length > 0) {
+    let loadedCount = 0;
+    const totalImages = images.length;
+    images.forEach(img => {
+      if (img.complete) {
+        loadedCount++;
+      } else {
+        img.addEventListener('load', () => {
+          loadedCount++;
+          if (loadedCount === totalImages) {
+            updateCarousel();
+          }
+        });
+      }
+    });
+    // If all images are already loaded, recalculate
+    if (loadedCount === totalImages) {
+      setTimeout(() => updateCarousel(), 50);
+    }
+  }
 }
 
 export default async function decorate(block) {

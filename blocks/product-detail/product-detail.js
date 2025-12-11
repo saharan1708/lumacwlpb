@@ -144,7 +144,11 @@ function buildRecommendationCard(item, isAuthor) {
   const categoryText = category && category.length ? category.join(", ") : "";
   const cat = document.createElement("p");
   cat.className = "pd-rec-card-category";
-  cat.textContent = categoryText.replaceAll("luma:", "").replaceAll("/", ", ");
+  // Format category: remove "luma:" or "Lumaproducts:", replace commas with slashes, uppercase
+  cat.textContent = categoryText
+    .replace(/^(luma:|lumaproducts:)/gi, "") // Remove luma/lumaproducts prefix (case-insensitive)
+    .replace(/\//g, " / ") // Replace slashes with /
+    .toUpperCase(); // Convert to uppercase
   const title = document.createElement("h3");
   title.className = "pd-rec-card-title";
   title.textContent = name || "";
@@ -236,13 +240,14 @@ function buildProductDetail(product, isAuthor) {
   // Category
   if (category && category.length > 0) {
     const categoryText = category
-      .map((cat) =>
-        cat
-          .replace(/^luma:/, "")
-          .replace(/\//g, " / ")
-          .toUpperCase()
+      .map(
+        (cat) =>
+          cat
+            .replace(/^(luma:|lumaproducts:)/gi, "") // Remove luma/lumaproducts prefix (case-insensitive)
+            .replace(/\//g, " / ") // Replace slashes with /
       )
-      .join(", ");
+      .join(" / ")
+      .toUpperCase();
     const categoryEl = document.createElement("p");
     categoryEl.className = "pd-category";
     categoryEl.textContent = categoryText;

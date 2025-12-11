@@ -143,7 +143,7 @@ function updateQuantity(productId, newQuantity, block) {
  * @returns {HTMLElement} Cart item row
  */
 function buildCartItem(product, block, isAuthor) {
-  const { id, name, images, quantity, price, subTotal } = product;
+  const { id, name, image, quantity, price, subTotal } = product;
 
   const row = document.createElement("div");
   row.className = "cart-item";
@@ -156,17 +156,17 @@ function buildCartItem(product, block, isAuthor) {
   const imageWrap = document.createElement("div");
   imageWrap.className = "cart-item-image";
 
-  if (images) {
+  if (image) {
     let picture = null;
-    if (!isAuthor && images.startsWith("http")) {
+    if (!isAuthor && image.startsWith("http")) {
       picture = document.createElement("picture");
       const img = document.createElement("img");
-      img.src = images;
+      img.src = image;
       img.alt = name || "Product image";
       img.loading = "lazy";
       picture.appendChild(img);
     } else {
-      picture = createOptimizedPicture(images, name || "Product image", false, [
+      picture = createOptimizedPicture(image, name || "Product image", false, [
         { width: "200" },
       ]);
     }
@@ -543,7 +543,11 @@ function buildRecommendationCard(item, isAuthor) {
   const categoryText = category && category.length ? category.join(", ") : "";
   const cat = document.createElement("p");
   cat.className = "cart-rec-card-category";
-  cat.textContent = categoryText.replaceAll("luma:", "").replaceAll("/", ", ");
+  // Format category: remove "luma:" or "Lumaproducts:", replace commas with slashes, uppercase
+  cat.textContent = categoryText
+    .replace(/^(luma:|lumaproducts:)/gi, "") // Remove luma/lumaproducts prefix (case-insensitive)
+    .replace(/\//g, " / ") // Replace slashes with /
+    .toUpperCase(); // Convert to uppercase
   const title = document.createElement("h3");
   title.className = "cart-rec-card-title";
   title.textContent = name || "";
