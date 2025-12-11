@@ -1,4 +1,15 @@
 /**
+ * Generate random purchase order number
+ * @returns {string} Random purchase order number
+ */
+function generatePurchaseOrderNumber() {
+  const prefix = "fb";
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 7);
+  return `${prefix}${timestamp}${random}`.substring(0, 12);
+}
+
+/**
  * Load checkout data from localStorage
  * @returns {Object|null} Saved checkout data
  */
@@ -251,14 +262,63 @@ function buildButtons() {
   confirmBtn.className = "order-summary-btn order-summary-btn-confirm";
   confirmBtn.textContent = "CONFIRM ORDER";
   confirmBtn.addEventListener("click", () => {
-    // Small delay to ensure dataLayer is updated and cart badge is cleared
-    setTimeout(() => {
-      navigateToPage("order-confirmation");
-    }, 100);
+    handleConfirmOrder();
   });
 
   buttonGroup.append(backBtn, confirmBtn);
   return buttonGroup;
+}
+
+/**
+ * Handle confirm order - Update dataLayer with commerce object
+ */
+function handleConfirmOrder() {
+  const cartData = getCartData();
+  const checkoutData = loadCheckoutData();
+  
+  // Generate purchase order number
+  const purchaseOrderNumber = generatePurchaseOrderNumber();
+  
+  // Store purchase order number for order-confirmation page
+  localStorage.setItem("luma_purchase_order_number", purchaseOrderNumber);
+  
+  // Prepare order items for commerce object
+  const products = Object.values(cartData.products || {});
+  const orderItems = products.map(product => ({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    quantity: product.quantity || 1,
+    category: product.category || "",
+  }));
+  
+  // Create commerce object
+  const commerceData = {
+    order: {
+      purchaseOrderNumber: purchaseOrderNumber,
+      productCount: cartData.productCount || 0,
+      subTotal: cartData.subTotal || 0,
+      total: cartData.total || 0,
+      items: orderItems,
+    },
+    shipping: {
+      shippingAmount: 5,
+      shippingMethod: "standardShipping",
+    },
+  };
+  
+  // Update dataLayer with commerce object
+  if (window.updateDataLayer) {
+    window.updateDataLayer({ commerce: commerceData }, true);
+    console.log("Commerce data added to dataLayer:", commerceData);
+  } else {
+    console.warn("⚠️ updateDataLayer not available");
+  }
+  
+  // Navigate to order confirmation
+  setTimeout(() => {
+    navigateToPage("order-confirmation");
+  }, 100);
 }
 
 /**

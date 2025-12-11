@@ -145,11 +145,53 @@ function navigateToPage(page) {
 }
 
 /**
+ * Load registered user data from localStorage
+ * @returns {Object|null} Registered user data
+ */
+function loadRegisteredUserData() {
+  try {
+    const registeredUser = localStorage.getItem("luma_registered_user");
+    if (registeredUser) {
+      return JSON.parse(registeredUser);
+    }
+  } catch (error) {
+    console.error("Failed to load registered user data:", error);
+  }
+  return null;
+}
+
+/**
  * Build checkout form
  * @returns {HTMLElement} Checkout form
  */
 function buildCheckoutForm() {
   const savedData = loadFormData();
+  const registeredUser = loadRegisteredUserData();
+
+  // Merge registered user data with saved checkout data
+  // Priority: savedData > registeredUser (if user has edited checkout form before)
+  const formData = {
+    firstName: savedData?.firstName || registeredUser?.firstName || "",
+    lastName: savedData?.lastName || registeredUser?.lastName || "",
+    email: savedData?.email || registeredUser?.email || "",
+    phone:
+      savedData?.phone ||
+      registeredUser?.phone ||
+      registeredUser?.phoneNumber ||
+      "",
+    streetAddress:
+      savedData?.streetAddress ||
+      registeredUser?.streetAddress ||
+      registeredUser?.address ||
+      "",
+    city: savedData?.city || registeredUser?.city || "",
+    postalCode:
+      savedData?.postalCode ||
+      registeredUser?.postalCode ||
+      registeredUser?.zip ||
+      "",
+    country: savedData?.country || registeredUser?.country || "",
+  };
 
   const form = document.createElement("form");
   form.className = "checkout-form";
@@ -170,9 +212,7 @@ function buildCheckoutForm() {
   firstNameGroup.className = "checkout-field-group";
   firstNameGroup.innerHTML = `
     <label for="firstName">First name <span class="required">*</span></label>
-    <input type="text" id="firstName" name="firstName" value="${
-      savedData?.firstName || ""
-    }" required>
+    <input type="text" id="firstName" name="firstName" value="${formData.firstName}" required>
   `;
 
   // Last Name
@@ -180,9 +220,7 @@ function buildCheckoutForm() {
   lastNameGroup.className = "checkout-field-group";
   lastNameGroup.innerHTML = `
     <label for="lastName">Last name <span class="required">*</span></label>
-    <input type="text" id="lastName" name="lastName" value="${
-      savedData?.lastName || ""
-    }" required>
+    <input type="text" id="lastName" name="lastName" value="${formData.lastName}" required>
   `;
 
   // Email
@@ -190,9 +228,7 @@ function buildCheckoutForm() {
   emailGroup.className = "checkout-field-group";
   emailGroup.innerHTML = `
     <label for="email">Email <span class="required">*</span></label>
-    <input type="email" id="email" name="email" value="${
-      savedData?.email || ""
-    }" required>
+    <input type="email" id="email" name="email" value="${formData.email}" required>
   `;
 
   // Phone
@@ -200,7 +236,7 @@ function buildCheckoutForm() {
   phoneGroup.className = "checkout-field-group";
   phoneGroup.innerHTML = `
     <label for="phone">Phone number</label>
-    <input type="tel" id="phone" name="phone" value="${savedData?.phone || ""}">
+    <input type="tel" id="phone" name="phone" value="${formData.phone}">
   `;
 
   // Street Address
@@ -208,9 +244,7 @@ function buildCheckoutForm() {
   streetGroup.className = "checkout-field-group checkout-field-full";
   streetGroup.innerHTML = `
     <label for="streetAddress">Street address</label>
-    <input type="text" id="streetAddress" name="streetAddress" value="${
-      savedData?.streetAddress || ""
-    }">
+    <input type="text" id="streetAddress" name="streetAddress" value="${formData.streetAddress}">
   `;
 
   // City
@@ -218,7 +252,7 @@ function buildCheckoutForm() {
   cityGroup.className = "checkout-field-group";
   cityGroup.innerHTML = `
     <label for="city">City</label>
-    <input type="text" id="city" name="city" value="${savedData?.city || ""}">
+    <input type="text" id="city" name="city" value="${formData.city}">
   `;
 
   // Postal Code
@@ -226,9 +260,7 @@ function buildCheckoutForm() {
   postalGroup.className = "checkout-field-group";
   postalGroup.innerHTML = `
     <label for="postalCode">Postal code</label>
-    <input type="text" id="postalCode" name="postalCode" value="${
-      savedData?.postalCode || ""
-    }">
+    <input type="text" id="postalCode" name="postalCode" value="${formData.postalCode}">
   `;
 
   // Country
@@ -239,22 +271,22 @@ function buildCheckoutForm() {
     <select id="country" name="country">
       <option value="">Select country</option>
       <option value="United States" ${
-        savedData?.country === "United States" ? "selected" : ""
+        formData.country === "United States" ? "selected" : ""
       }>United States</option>
       <option value="Canada" ${
-        savedData?.country === "Canada" ? "selected" : ""
+        formData.country === "Canada" ? "selected" : ""
       }>Canada</option>
       <option value="United Kingdom" ${
-        savedData?.country === "United Kingdom" ? "selected" : ""
+        formData.country === "United Kingdom" ? "selected" : ""
       }>United Kingdom</option>
       <option value="Australia" ${
-        savedData?.country === "Australia" ? "selected" : ""
+        formData.country === "Australia" ? "selected" : ""
       }>Australia</option>
       <option value="India" ${
-        savedData?.country === "India" ? "selected" : ""
+        formData.country === "India" ? "selected" : ""
       }>India</option>
       <option value="Other" ${
-        savedData?.country === "Other" ? "selected" : ""
+        formData.country === "Other" ? "selected" : ""
       }>Other</option>
     </select>
   `;
