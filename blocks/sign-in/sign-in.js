@@ -1,5 +1,12 @@
 import { isAuthorEnvironment } from "../../scripts/scripts.js";
 
+// Adobe Profile API Configuration
+const PROFILE_API_CONFIG = {
+  baseUrl: "https://dsn.adobe.com/api/v2/profile/email",
+  orgId: "0E061E2D61F93F260A495FD6@AdobeOrg",
+  sandboxName: "public-luma",
+};
+
 export default async function decorate(block) {
   const isAuthor = isAuthorEnvironment();
 
@@ -85,16 +92,62 @@ function isValidEmail(email) {
 }
 
 /**
+ * Checks if user profile exists via Adobe Profile API
+ * @param {string} email - Email to check
+ * @returns {Promise<{exists: boolean, profile: object|null}>} Profile check result
+ */
+async function checkProfileViaAPI(email) {
+  try {
+    const encodedEmail = encodeURIComponent(email);
+    const url = `${
+      PROFILE_API_CONFIG.baseUrl
+    }/${encodedEmail}?orgId=${encodeURIComponent(
+      PROFILE_API_CONFIG.orgId
+    )}&sandboxName=${PROFILE_API_CONFIG.sandboxName}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      console.warn("Profile API request failed:", response.status);
+      return { exists: false, profile: null };
+    }
+
+    const data = await response.json();
+
+    // Check if response has status "success" and result object
+    if (data.status === "success" && data.result) {
+      return { exists: true, profile: data.result };
+    }
+
+    return { exists: false, profile: null };
+  } catch (error) {
+    console.error("Error checking profile via API:", error);
+    return { exists: false, profile: null };
+  }
+}
+
+/**
  * Attaches sign-in form submission handler
  * @param {HTMLElement} block - The sign-in block
  */
 function attachSignInHandler(block) {
-  const form = block.querySelector("form");
+  let form = block.querySelector("form");
   if (!form) {
     console.warn("Sign-in form not found");
     return;
   }
 
+  // Clone the form to remove all existing event listeners (including form component's submit handler)
+  const newForm = form.cloneNode(true);
+  form.parentNode.replaceChild(newForm, form);
+  form = newForm; // Update reference to use the new form
+
+  // Now attach our custom submit handler to the clean form
   form.addEventListener("submit", async (event) => {
     event.preventDefault(); // Prevent default form submission
 
@@ -136,29 +189,63 @@ function attachSignInHandler(block) {
         .trim();
     }
 
+    // If localStorage doesn't have valid email, check via API as fallback
     if (!registeredEmail || !isValidEmail(registeredEmail)) {
-      showErrorMessage(
-        form,
-        "No account found. Please create an account first."
-      );
-      return;
-    }
+      console.log("LocalStorage check failed, trying API fallback...");
 
-    // Debug logging (can be removed later)
-    console.log("Sign-in validation:", {
-      entered: enteredEmail,
-      registered: registeredEmail,
-      match: enteredEmail.toLowerCase() === registeredEmail.toLowerCase(),
-    });
+      // Show loading state
+      const submitButton = form.querySelector('button[type="submit"]');
+      const originalButtonText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = "Checking...";
 
-    // Check if entered email matches registered email (case-insensitive)
-    if (enteredEmail.toLowerCase() !== registeredEmail.toLowerCase()) {
-      showErrorMessage(
-        form,
-        "Email not found. Please check your email or create an account."
-      );
-      emailInput.focus();
-      return;
+      try {
+        const { exists, profile } = await checkProfileViaAPI(enteredEmail);
+
+        // Restore button state
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+
+        if (!exists || !profile) {
+          showErrorMessage(
+            form,
+            "No account found. Please create an account first."
+          );
+          return;
+        }
+
+        // Profile found via API, proceed with login
+        console.log("Profile found via API:", profile);
+      } catch (error) {
+        // Restore button state
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+
+        console.error("API fallback error:", error);
+        showErrorMessage(
+          form,
+          "No account found. Please create an account first."
+        );
+        return;
+      }
+    } else {
+      // LocalStorage has valid email, check if it matches
+      // Debug logging (can be removed later)
+      console.log("Sign-in validation:", {
+        entered: enteredEmail,
+        registered: registeredEmail,
+        match: enteredEmail.toLowerCase() === registeredEmail.toLowerCase(),
+      });
+
+      // Check if entered email matches registered email (case-insensitive)
+      if (enteredEmail.toLowerCase() !== registeredEmail.toLowerCase()) {
+        showErrorMessage(
+          form,
+          "Email not found. Please check your email or create an account."
+        );
+        emailInput.focus();
+        return;
+      }
     }
 
     // Sign-in successful - Load user data from registration
