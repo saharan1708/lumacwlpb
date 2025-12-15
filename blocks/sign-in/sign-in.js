@@ -39,12 +39,11 @@ export default async function decorate(block) {
           {
             id: "password",
             name: "password",
-            fieldType: "text-input",
+            fieldType: "password-input",
             label: { value: "Password" },
             required: true,
             autoComplete: "current-password",
             properties: { colspan: 12 },
-            format: "password",
           },
           {
             id: "sign-in-btn",
